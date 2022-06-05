@@ -98,7 +98,7 @@ def random_data_button():
     
 async def run(address, root, loop):    
     async with BleakClient(address, timeout=5.0) as client:
-        global write_characteristic, ble_client, ble_close, ble_program_type, read_characteristic
+        global write_characteristic, ble_client, ble_close, ble_program_type, read_characteristic, ble_run_state
         ble_client = client
         print('connected')
         services = await client.get_services()        
