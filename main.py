@@ -4,8 +4,6 @@ from tkinter import *
 from datetime import datetime
 import threading
 import random
-import binascii
-
 address = "F4:60:77:FF:23:F0"
 read_write_charcteristic_uuid = "foo01111-0451-4000-booo-oooooo000000"
 
@@ -45,7 +43,7 @@ async def stop():
 
 async def randomdata():
     global ble_run_state
-    random_len = random.randrange(0, 10)
+    random_len = random.randrange(0, 17)
     packet = None
     if random_len == 0 :
         packet = bytearray([0x02, 0x31, 0x46, 0x03])
@@ -90,7 +88,7 @@ def close_button():
     global ble_close
     ble_close = False
     
-def bug_data_button():
+def random_data_button():
     global ble_run_state, ble_program_type
     ble_program_type = 0
     ble_run_state = False  
@@ -144,16 +142,16 @@ def main(loop):
     connect_btn = Button(root, text="BLE Connect", command=lambda:do_tasks(loop,root))
     connect_btn.pack()
 
-    measure_btn = Button(root, text="START MEASURE", command=measure_button)
-    measure_btn.pack()
+    # measure_btn = Button(root, text="START MEASURE", command=measure_button)
+    # measure_btn.pack()
 
-    get_hr_btn = Button(root, text="GET HR", command=get_hr_button)
-    get_hr_btn.pack()
+    # get_hr_btn = Button(root, text="GET HR", command=get_hr_button)
+    # get_hr_btn.pack()
 
-    stop_btn = Button(root, text="STOP MEASUREMENT", command=stop_button)
-    stop_btn.pack()
+    # stop_btn = Button(root, text="STOP MEASUREMENT", command=stop_button)
+    # stop_btn.pack()
 
-    stop_btn = Button(root, text="Bug Data", command=bug_data_button)
+    stop_btn = Button(root, text="Random Data", command=random_data_button)
     stop_btn.pack()
 
     close_btn = Button(root, text="CLOSE", command=close_button)
@@ -164,4 +162,3 @@ def main(loop):
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     main(loop)
-
