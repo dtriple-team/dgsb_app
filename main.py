@@ -3,6 +3,8 @@ from bleak import BleakClient
 from tkinter import *
 from datetime import datetime
 import threading
+import random
+import binascii
 
 address = "F4:60:77:FF:23:F0"
 read_write_charcteristic_uuid = "foo01111-0451-4000-booo-oooooo000000"
@@ -22,31 +24,45 @@ async def ble_write(data):
         await ble_write(data[16:len(data)])
     else:
         await ble_client.write_gatt_char(write_characteristic, data)
-    await ble_read()
+    # await ble_read()
 
 async def ble_read():
     global read_characteristic
     read = await ble_client.read_gatt_char(read_characteristic)
     print("read data : ", read)
 
-
-
 async def get_hr():
-    global ble_run_state 
-    ble_run_state = False
     await asyncio.sleep(0.3)
-    await ble_write(bytearray([0x02, 0x31, 0x39, 0x03]))
+    await ble_write(bytearray([0x02, 0x30, 0x39, 0x03]))
 
 async def start_measure():
-    global ble_run_state
-    ble_run_state = False
     await asyncio.sleep(0.3)
-    await ble_write(bytearray[0x02, 0x31, 0x36, 0x03])
+    await ble_write(bytearray[0x02, 0x30, 0x36, 0x03])
 
 async def stop():
-    global ble_run_state 
-    ble_run_state = False
-    await ble_write(bytearray([0x02, 0x31, 0x37, 0x3]))  
+    await asyncio.sleep(0.3)
+    await ble_write(bytearray([0x02, 0x30, 0x37, 0x03]))  
+
+async def randomdata():
+    global ble_run_state
+    random_len = random.randrange(0, 10)
+    packet = None
+    if random_len == 0 :
+        packet = bytearray([0x02, 0x31, 0x46, 0x03])
+    else:
+        packet_len = ""
+        if random_len<10:
+            packet_len = '0'+str(random_len)+'^'
+        else : 
+            packet_len = str(random_len)+'^'
+        packet = bytearray([0x02, 0x31, 0x46, 0x5E])
+        for p in bytearray(packet_len.encode()):
+            packet.append(p)
+        for d in range(random_len):
+            packet.append(d+1)
+        packet.append(0x03)
+    await ble_write(packet)
+
 
 def measure_button():
     print("measure button click!")
@@ -74,6 +90,10 @@ def close_button():
     global ble_close
     ble_close = False
     
+def bug_data_button():
+    global ble_run_state, ble_program_type
+    ble_program_type = 0
+    ble_run_state = False  
     
 async def run(address, root, loop):    
     async with BleakClient(address, timeout=5.0) as client:
@@ -90,7 +110,10 @@ async def run(address, root, loop):
         # client 가 연결된 상태라면  
         if client.is_connected:
             while(ble_close):
-                if ble_program_type==1:
+                if ble_program_type == 0:
+                    await randomdata()
+
+                elif ble_program_type==1:
                     if ble_run_state == False: 
                         await start_measure()
                 elif ble_program_type==2:
@@ -99,8 +122,9 @@ async def run(address, root, loop):
                 elif ble_program_type==3:
                     if ble_run_state == False: 
                         await stop()
+                
                 ble_run_state = True
-                await asyncio.sleep(3)
+                await asyncio.sleep(1)
     print('disconnect')
     loop.close()
     root.destroy()
@@ -127,6 +151,9 @@ def main(loop):
     get_hr_btn.pack()
 
     stop_btn = Button(root, text="STOP MEASUREMENT", command=stop_button)
+    stop_btn.pack()
+
+    stop_btn = Button(root, text="Bug Data", command=bug_data_button)
     stop_btn.pack()
 
     close_btn = Button(root, text="CLOSE", command=close_button)
