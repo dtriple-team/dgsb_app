@@ -11,7 +11,7 @@ write_characteristic = None
 read_characteristic = None
 ble_client = None
 ble_close = True
-ble_program_type = 0
+ble_program_type = -1
 ble_run_state = False
 root = None
 
