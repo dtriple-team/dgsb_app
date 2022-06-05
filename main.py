@@ -35,18 +35,18 @@ async def get_hr():
     global ble_run_state 
     ble_run_state = False
     await asyncio.sleep(0.3)
-    await ble_write(bytearray([0x02, 0x30, 0x39, 0x03]))
+    await ble_write(bytearray([0x02, 0x31, 0x39, 0x03]))
 
 async def start_measure():
     global ble_run_state
     ble_run_state = False
     await asyncio.sleep(0.3)
-    await ble_write(bytearray[0x02, 0x30, 0x36, 0x03])
+    await ble_write(bytearray[0x02, 0x31, 0x36, 0x03])
 
 async def stop():
     global ble_run_state 
     ble_run_state = False
-    await ble_write(bytearray([0x02, 0x30, 0x37, 0x30]))  
+    await ble_write(bytearray([0x02, 0x31, 0x37, 0x3]))  
 
 def measure_button():
     print("measure button click!")

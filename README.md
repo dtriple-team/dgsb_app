@@ -7,7 +7,7 @@ python -m venv venv
 # 가상 환경 실행
 
 ```
-venv\Scrips\activate
+venv\Scripts\activate
 ```
 
 # python module 설치
