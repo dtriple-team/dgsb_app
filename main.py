@@ -22,7 +22,7 @@ async def ble_write(data):
         await ble_write(data[16:len(data)])
     else:
         await ble_client.write_gatt_char(write_characteristic, data)
-    # await ble_read()
+    await ble_read()
 
 async def ble_read():
     global read_characteristic
@@ -71,8 +71,11 @@ def measure_button():
 def get_hr_button():
     print("get hr button click!")
     global ble_program_type, ble_run_state
-    ble_program_type = 2
-    ble_run_state = False
+    if ble_program_type != 1 :
+        print("측정 버튼을 눌러주세요 !")
+    else :
+        ble_program_type = 2
+        ble_run_state = False
 
 def stop_button():
     print("stop button click!")
@@ -110,7 +113,6 @@ async def run(address, root, loop):
             while(ble_close):
                 if ble_program_type == 0:
                     await randomdata()
-
                 elif ble_program_type==1:
                     if ble_run_state == False: 
                         await start_measure()
@@ -142,14 +144,14 @@ def main(loop):
     connect_btn = Button(root, text="BLE Connect", command=lambda:do_tasks(loop,root))
     connect_btn.pack()
 
-    # measure_btn = Button(root, text="START MEASURE", command=measure_button)
-    # measure_btn.pack()
+    measure_btn = Button(root, text="측정 시작", command=measure_button)
+    measure_btn.pack()
 
-    # get_hr_btn = Button(root, text="GET HR", command=get_hr_button)
-    # get_hr_btn.pack()
+    get_hr_btn = Button(root, text="GET HR", command=get_hr_button)
+    get_hr_btn.pack()
 
-    # stop_btn = Button(root, text="STOP MEASUREMENT", command=stop_button)
-    # stop_btn.pack()
+    stop_btn = Button(root, text="측정 종료", command=stop_button)
+    stop_btn.pack()
 
     stop_btn = Button(root, text="Random Data", command=random_data_button)
     stop_btn.pack()
