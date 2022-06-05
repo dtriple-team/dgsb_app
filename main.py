@@ -5,7 +5,7 @@ from datetime import datetime
 import threading
 import random
 address = "F4:60:77:FF:23:F0"
-read_write_charcteristic_uuid = "foo01111-0451-4000-booo-oooooo000000"
+read_write_charcteristic_uuid = "f0001110-0451-4000-b000-000000000000"
 
 write_characteristic = None
 read_characteristic = None
