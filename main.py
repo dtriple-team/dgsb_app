@@ -14,14 +14,17 @@ ble_close = True
 ble_program_type = -1
 ble_run_state = False
 root = None
-
+text = None
+submit_packet = []
 async def ble_write(data):
     global write_characteristic, ble_client
+    print("BLE Write ! :", data)
     if len(data)>=17:
         await ble_client.write_gatt_char(write_characteristic, data[0:16])
         await ble_write(data[16:len(data)])
     else:
         await ble_client.write_gatt_char(write_characteristic, data)
+    
     await ble_read()
 
 async def ble_read():
@@ -35,7 +38,7 @@ async def get_hr():
 
 async def start_measure():
     await asyncio.sleep(0.3)
-    await ble_write(bytearray[0x02, 0x30, 0x36, 0x03])
+    await ble_write(bytearray([0x02, 0x30, 0x36, 0x03]))
 
 async def stop():
     await asyncio.sleep(0.3)
@@ -95,10 +98,23 @@ def random_data_button():
     global ble_run_state, ble_program_type
     ble_program_type = 0
     ble_run_state = False  
+
+def submit_button():
+    print("submit button click !")
+    global text, submit_packet, ble_run_state, ble_program_type
+    ble_program_type = 4
+    packet = text.get(1.0, END+"-1c")
+    if len(packet) != 0:
+        packet = packet.split(" ")
+        submit_packet = []
+        for i in packet:
+            submit_packet.append(int(i))
+        submit_packet = bytearray(submit_packet)
+    ble_run_state = False
     
 async def run(address, root, loop):    
     async with BleakClient(address, timeout=5.0) as client:
-        global write_characteristic, ble_client, ble_close, ble_program_type, read_characteristic, ble_run_state
+        global write_characteristic, ble_client, ble_close, ble_program_type, read_characteristic, ble_run_state, submit_packet
         ble_client = client
         print('connected')
         services = await client.get_services()        
@@ -122,12 +138,15 @@ async def run(address, root, loop):
                 elif ble_program_type==3:
                     if ble_run_state == False: 
                         await stop()
-                
+                elif ble_program_type==4:
+                    if ble_run_state == False: 
+                        await ble_write(submit_packet)
                 ble_run_state = True
                 await asyncio.sleep(1)
     print('disconnect')
     loop.close()
     root.destroy()
+
 def asyncio_thread(loop, root):
     global address
     loop.run_until_complete(run(address, root, loop))
@@ -137,28 +156,38 @@ def do_tasks(loop,root):
     threading.Thread(target=asyncio_thread, args=(loop,root,)).start()
 
 def main(loop):
-    global root 
+    global root, text
     root = Tk()
     root.title("GUI TEST")
-    root.geometry('500x200')
-    connect_btn = Button(root, text="BLE Connect", command=lambda:do_tasks(loop,root))
-    connect_btn.pack()
 
-    measure_btn = Button(root, text="측정 시작", command=measure_button)
-    measure_btn.pack()
+
+    connect_btn = Button(root, text="BLE Connect", command=lambda:do_tasks(loop,root))
+    connect_btn.grid(column=0, row=0)
+
+    close_btn = Button(root, text="BLE Disconnect", command=close_button)
+    close_btn.grid(column=1, row=0)
+
+    measure_btn = Button(root, text="Measure Start", command=measure_button)
+    measure_btn.grid(column=0, row=1)
+
+    stop_btn = Button(root, text="Measure Stop", command=stop_button)
+    stop_btn.grid(column=1, row=1)
 
     get_hr_btn = Button(root, text="GET HR", command=get_hr_button)
-    get_hr_btn.pack()
+    get_hr_btn.grid(column=0, row=2)
 
-    stop_btn = Button(root, text="측정 종료", command=stop_button)
-    stop_btn.pack()
 
     stop_btn = Button(root, text="Random Data", command=random_data_button)
-    stop_btn.pack()
+    stop_btn.grid(column=1, row=2)
 
-    close_btn = Button(root, text="CLOSE", command=close_button)
-    close_btn.pack()
-
+ 
+    label=Label(root, text="Packet Input ex) 02 30 39 03")
+    label.grid(columnspan=2)
+    
+    text=Text(root, height=10, width=30)
+    text.grid(column=0, row=4)
+    submit_btn = Button(root, text="Submit", command=submit_button)
+    submit_btn.grid(column=1, row=4)
     root.mainloop()
 
 if __name__ == '__main__':
