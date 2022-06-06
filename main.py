@@ -104,11 +104,12 @@ def submit_button():
     global text, submit_packet, ble_run_state, ble_program_type
     ble_program_type = 4
     packet = text.get(1.0, END+"-1c")
+        
     if len(packet) != 0:
         packet = packet.split(" ")
         submit_packet = []
         for i in packet:
-            submit_packet.append(int(i))
+            submit_packet.append(int(i, 16))
         submit_packet = bytearray(submit_packet)
     ble_run_state = False
     
@@ -188,6 +189,7 @@ def main(loop):
     text.grid(column=0, row=4)
     submit_btn = Button(root, text="Submit", command=submit_button)
     submit_btn.grid(column=1, row=4)
+
     root.mainloop()
 
 if __name__ == '__main__':
