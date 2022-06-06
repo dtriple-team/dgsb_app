@@ -34,19 +34,18 @@ async def ble_read():
 
 async def get_hr():
     await asyncio.sleep(0.3)
-    await ble_write(bytearray([0x02, 0x30, 0x39, 0x03]))
+    await ble_write(bytearray([0x02, 0x30, 0x39, 0x5E, 0x30, 0x31, 0x5E, 0x01, 0x03]))
 
 async def start_measure():
     await asyncio.sleep(0.3)
-    await ble_write(bytearray([0x02, 0x30, 0x36, 0x03]))
-
+    await ble_write(bytearray([0x02, 0x30, 0x36, 0x5E, 0x30, 0x31, 0x5E, 0x01, 0x03]))
 async def stop():
     await asyncio.sleep(0.3)
-    await ble_write(bytearray([0x02, 0x30, 0x37, 0x03]))  
+    await ble_write(bytearray([0x02, 0x30, 0x37, 0x5E, 0x30, 0x31, 0x5E, 0x01, 0x03]))   
 
 async def randomdata():
     global ble_run_state
-    random_len = random.randrange(0, 17)
+    random_len = random.randrange(1, 17)
     packet = None
     if random_len == 0 :
         packet = bytearray([0x02, 0x31, 0x46, 0x03])
