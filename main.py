@@ -143,9 +143,11 @@ async def run(address, root, loop):
                         await ble_write(submit_packet)
                 ble_run_state = True
                 await asyncio.sleep(1)
+    await client.disconnect()
     print('disconnect')
-    loop.close()
-    root.destroy()
+    
+    # loop.close()
+    # root.destroy()
 
 def asyncio_thread(loop, root):
     global address
