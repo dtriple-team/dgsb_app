@@ -183,7 +183,7 @@ def main(loop):
     stop_btn.grid(column=1, row=2)
 
  
-    label=Label(root, text="Packet Input ex) 02 30 39 03")
+    label=Label(root, text="Packet Input ex) 02 30 36 5E 30 31 5E 01 03")
     label.grid(columnspan=2)
     
     text=Text(root, height=10, width=30)
