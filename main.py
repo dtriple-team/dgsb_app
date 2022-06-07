@@ -16,6 +16,7 @@ ble_run_state = False
 root = None
 text = None
 submit_packet = []
+
 async def ble_write(data):
     global write_characteristic, ble_client
     print("BLE Write ! :", data)
@@ -63,7 +64,6 @@ async def randomdata():
         packet.append(0x03)
     await ble_write(packet)
 
-
 def measure_button():
     print("measure button click!")
     global ble_program_type, ble_run_state
@@ -73,11 +73,11 @@ def measure_button():
 def get_hr_button():
     print("get hr button click!")
     global ble_program_type, ble_run_state
-    if ble_program_type != 1 :
-        print("측정 버튼을 눌러주세요 !")
-    else :
+    if ble_program_type == 1 or ble_program_type == 2 :
         ble_program_type = 2
         ble_run_state = False
+    else :
+        print("측정 버튼을 눌러주세요 !")
 
 def stop_button():
     print("stop button click!")
