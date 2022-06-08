@@ -254,7 +254,7 @@ async def scan():
     # 검색 시작
     await scanner.start()
     print("[BLE] SCAN START")
-    status_label_set("STATUS : Scanning")
+    status_label_set("STATUS : Scanning..")
     # 5초간 대기 이때 검색된 장치들이 있다면 등록된 콜백함수가 호출된다.
     scanning = True
 
@@ -341,6 +341,7 @@ def ui_update():
         random_btn.grid(row=2, column=2, sticky=W)
         write_label.grid(row=3, column=0, columnspan=3, sticky=W+E+N+S )
         read_label.grid(row=4, column=0, columnspan=3, sticky=W+E+N+S )
+        label.grid(row=5, column=0, columnspan=3, sticky=W+E+N+S)
         text.grid(row=6, column=0, columnspan=3, sticky=W+E+N+S)
         submit_btn.grid(row=7, column=0, columnspan=3, sticky=W+E+N+S)
     else:
@@ -393,6 +394,7 @@ def stop_button(loop):
 def disconnect_button():
     global ble_connect
     ble_connect = False
+    status_label_set("STATUS : Disconnecting..")
     print("[BTN EVENT] BLE Disconnect")
     
 def randomdata():
@@ -417,6 +419,7 @@ def random_data_button(loop):
 
 def submit_button(loop, packet_text):
     print("[BTN EVENT] INPUT Submit")
+    
     packet = packet_text.get(1.0, END+"-1c")
         
     if len(packet) != 0:
@@ -424,7 +427,10 @@ def submit_button(loop, packet_text):
         submit_packet = []
         for i in packet:
             submit_packet.append(int(i, 16))
+        # print(bytearray(submit_packet))
+        status_label_set("STATUS : SEND INPUT DATA")
         do_ble_write_tasks(loop, bytearray(submit_packet))
+    
 
 def main(loop):
     global root, text, devicelistbox, read_text, write_text,status_text,scan_btn, connect_btn,frame,scrollbar,scan_stop_btn, ble_connect
@@ -463,8 +469,8 @@ def main(loop):
     write_label=Label(root, textvariable=write_text)
     read_label=Label(root, textvariable=read_text)
     
-    label=Label(root, text="Packet Input ex) 02 30 36 5E 30 31 5E 01 03")
-    label.grid(row=5, column=0, columnspan=3, sticky=W+E+N+S)
+    label=Label(root, text="Packet Input ex) 0x02 0x01 0x01 0x01 0x03")
+    
     
     text=Text(root)
     submit_btn = Button(root, text="Submit", command=lambda:submit_button(loop,text))
