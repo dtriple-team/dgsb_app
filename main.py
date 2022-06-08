@@ -212,7 +212,7 @@ async def run(address):
 
         if client.is_connected:
             while(ble_connect):
-                await ble_read()
+                # await ble_read()
                 await asyncio.sleep(1)
     except Exception as e:
         # 연결 실패시 발생
