@@ -17,7 +17,7 @@ class BLE:
         self.connected_client = []
 
         self.is_running = False
-
+        self.is_close = False
     def root_connect(self, root):
         self.root = root
 
@@ -30,9 +30,10 @@ class BLE:
         self.loop = asyncio.new_event_loop()
         threading.Thread(target=self.asyncio_thread).start()
     def do_asyncio_stop_tasks(self):
-        threading.Thread(target=self.asyncio_stop_thread, args=(False,)).start()
+        threading.Thread(target=self.asyncio_stop_thread).start()
     def do_asyncio_close_tasks(self):
-        return threading.Thread(target=self.asyncio_stop_thread, args=(True,))
+        self.is_close = True
+        return threading.Thread(target=self.asyncio_stop_thread)
     def do_scan_tasks(self):
         print("[BTN EVENT] SCAN START")
         threading.Thread(target=self.asyncio_scan_thread).start()
@@ -53,12 +54,12 @@ class BLE:
     def asyncio_thread(self):
         self.loop.run_until_complete(self.asyncio_start())
         self.loop.close()
-        if not self.root.get_close_status() :
+        if not self.is_close :
             self.root.change_ui(self.is_running)
 
-    def asyncio_stop_thread(self, is_close):
+    def asyncio_stop_thread(self):
         if self.is_running:
-            self.loop.create_task(self.asyncio_stop(is_close))
+            self.loop.create_task(self.asyncio_stop())
         else :
             print("비동기 루프 실행 상태가 아닙니다.")
 
@@ -117,9 +118,9 @@ class BLE:
         else :
             print("비동기 루프를 실행중입니다.")
 
-    async def asyncio_stop(self, is_close):
-        await self.ble_scan_stop(is_close)
-        await self.ble_all_disconnect(is_close)
+    async def asyncio_stop(self):
+        await self.ble_scan_stop()
+        await self.ble_all_disconnect()
         await asyncio.sleep(2)
         self.is_running = False
 
@@ -135,17 +136,19 @@ class BLE:
         else :
             print("스캔 상태 입니다.")
 
-    async def ble_scan_stop(self, is_close):
+    async def ble_scan_stop(self):
         if self.is_scanning:
             await self.scanner.stop()  
             self.is_scanning = False  
-            if not is_close:
+            if not self.is_close:
                 self.root.status_label_set("STATUS : Scan Stop")
         else :
             print("스캔 종료 상태 입니다.")
     def on_disconnect(self, client):
         print("[BLE CALLBACK] Client with address {} got disconnected!".format(client.address))
-        self.root.clientlistbox_find_delete(client.address)
+        if self.is_close:
+            self.root.status_label_set(f'Disconnect ! {client.address}')
+            self.root.clientlistbox_find_delete(client.address)
         for i in range(len(self.connected_client)) :
             if self.connected_client[i].address == client.address:
                 del self.connected_client[i]
