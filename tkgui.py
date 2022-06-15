@@ -1,7 +1,8 @@
-from tkinter import Tk, Label, Button, StringVar, constants, Frame, Listbox, Scrollbar, Text
+from tkinter import Tk, Label, Button, StringVar, constants, Frame, Listbox, Scrollbar, Text, messagebox
 import ble as b
 import time,sys 
 import threading
+import protocol
 class TkGUI:
     def __init__(self):
         self.root = Tk()
@@ -9,7 +10,6 @@ class TkGUI:
         self.root.title("GUI TEST")
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.root.geometry("1080x600")
-        self.is_close = False
         self.ble_start_btn = Button(self.root, text="BLE START", command=self.loop.do_asyncio_tasks)
         self.ble_stop_btn = Button(self.root, text="BLE STOP", command=self.loop.do_asyncio_stop_tasks)
         
@@ -34,11 +34,12 @@ class TkGUI:
         self.frame_connect.pack(side="right", fill="both", expand=True)
         self.close_btn = Button(self.frame_connect, text="BLE Disconnect", command=self.loop.do_ble_disconnect_tasks)
 
-        self.measure_btn = Button(self.frame_connect, text="Measure Start", command=lambda:self.loop.do_ble_write_tasks(bytearray([0x02, 0x03])))
-        self.stop_btn = Button(self.frame_connect, text="Measure Stop")
-        self.get_hr_btn = Button(self.frame_connect, text="GET HR")
-        self.get_spo2_btn = Button(self.frame_connect, text="GET SPO2")
-
+        self.measure_btn = Button(self.frame_connect, text="Measure Start", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_START_MEASURE))
+        self.stop_btn = Button(self.frame_connect, text="Measure Stop", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_STOP_MEASURE))
+        self.get_hr_btn = Button(self.frame_connect, text="GET HR", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_HR))
+        
+        # self.get_spo2_btn = Button(self.frame_connect, text="GET SPO2")
+        self.get_hr_continue = Button(self.frame_connect, text="GET HR Continue",command=lambda:self.loop.do_ble_write_loop_tasks(protocol.REQ_GET_HR))
         self.random_btn = Button(self.frame_connect, text="Random Data")
         
         self.read_text = StringVar()
@@ -56,8 +57,8 @@ class TkGUI:
         
         self.label=Label(self.frame_connect, text="Packet Input ex) 0x02 0x01 0x01 0x01 0x03")
         
-        self.text=Text(self.frame_connect)
-        self.submit_btn = Button(self.frame_connect, text="Submit")
+        self.input_text=Text(self.frame_connect)
+        self.submit_btn = Button(self.frame_connect, text="Submit", command=self.submit_button)
         
         self.loop.root_connect(self)
         
@@ -67,21 +68,17 @@ class TkGUI:
         self.root.mainloop()
 
     def on_closing(self):
-        self.is_close = True
-        t1 = self.loop.do_asyncio_close_tasks()
-        t2 = threading.Thread(target=self.close)
-        t1.start()
-        t2.start()
-        t1.join()
-        t2.join()
-    def get_close_status(self):
-        return self.is_close
-    def close(self):
-        print("종료 !!")
-        while self.loop.is_running:
-            print("..?")
-            time.sleep(2)
-        self.root.destroy() 
+        # self.is_close = True
+        # t1 = self.loop.do_asyncio_close_tasks()
+        # t2 = threading.Thread(target=self.close)
+        # t1.start()
+        # t2.start()
+        # t1.join()
+        # t2.join()
+        if self.loop.get_is_running() :
+            messagebox.showinfo("프로그램 종료", "하단에 \'BLE STOP\' 버튼을 누른 후 종료해주세요.")
+        else :
+            self.root.destroy()
     def change_ui(self, is_running):
         if is_running:
             self.ble_start_btn.pack_forget()
@@ -121,7 +118,8 @@ class TkGUI:
         self.measure_btn.grid(row=1,column=1,  sticky=constants.W)
         self.stop_btn.grid(row=1, column=2, sticky=constants.W)
         self.get_hr_btn.grid(row=2, column=0, sticky=constants.W)
-        self.get_spo2_btn.grid(row=2, column=1, sticky=constants.W)
+        # self.get_spo2_btn.grid(row=2, column=1, sticky=constants.W)
+        self.get_hr_continue.grid(row=2, column=1, sticky=constants.W)
         self.random_btn.grid(row=2, column=2, sticky=constants.W)
         self.write_label.grid(row=3, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
         self.read_label.grid(row=4, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
@@ -131,7 +129,7 @@ class TkGUI:
         self.client_listbox.pack(expand=True, fill=constants.Y)
         
         self.label.grid(row=6, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S)
-        self.text.grid(row=7, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S)
+        self.input_text.grid(row=7, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S)
         self.submit_btn.grid(row=8, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S)
         
         
@@ -141,7 +139,9 @@ class TkGUI:
         self.measure_btn.grid_forget()
         self.stop_btn.grid_forget()
         self.get_hr_btn.grid_forget()
-        self.get_spo2_btn.grid_forget()
+        
+        # self.get_spo2_btn.grid_forget()
+        self.get_hr_continue.grid_forget()
         self.random_btn.grid_forget()
         self.write_label.grid_forget()
         self.read_label.grid_forget()
@@ -149,7 +149,7 @@ class TkGUI:
         self.client_scrollbar.pack_forget()
         self.client_listbox.pack_forget()
         self.label.grid_forget()
-        self.text.grid_forget()
+        self.input_text.grid_forget()
         self.submit_btn.grid_forget()
 
     def status_label_set(self, messeage):
@@ -202,6 +202,13 @@ class TkGUI:
                 break
     def clientlistbox_all_delete(self):
         self.client_listbox.delete(0, constants.END)
-my_gui = TkGUI()
-my_gui.run()
+    def submit_button(self):
+        input_text = self.input_text.get(1.0, constants.END+"-1c")
+        if len(input_text) != 0:
+            input_text = input_text.split(" ")
+            submit_packet = []
+            for i in input_text:
+                submit_packet.append(int(i, 16))
+            self.loop.do_ble_write_tasks(bytearray(submit_packet))
+
 
