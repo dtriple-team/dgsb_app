@@ -1,7 +1,7 @@
-import asyncio
+import asyncio, threading
 from bleak import BleakClient, BleakScanner
-import protocol
-import threading, time, copy
+from ble_print import print_hex
+
 read_write_charcteristic_uuid = "f0001111-0451-4000-b000-000000000000"
 class BLE:
     def __init__(self):
@@ -18,19 +18,60 @@ class BLE:
 
         self.is_running = False
         self.vital_loop = []
+
     def root_connect(self, root):
         self.root = root
 
     def scan_init(self):
-        self.root.devicelistbox_init()
+        self.root.scanlistbox_init()
         self.devicelist = []
         self.select_address = None
+        
+    def is_click_device(self, address):
+        if address:
+            return True
+        else:
+            print("[NOTIFICATION] Please select ble device !")
+            return False
 
+    def get_index_select_client(self, address):
+        for i in range(len(self.connected_client)):
+            if self.connected_client[i].address == address:
+                return i
+        print("[NOTIFICATION] Disconnected Device !")
+        return -1
+
+    def get_is_running(self):
+        return self.is_running
+    """
+    callback function
+    """  
+    def scan_detection_callback(self, device, advertisement_data):
+        if device.name is not None:
+            device_info = f'{device.name} {device.address}'
+            if device_info not in self.devicelist:
+                self.devicelist.append(device_info)
+                self.root.devicelist_insert(len(self.devicelist)-1, device_info)
+                
+    def ble_disconnect_callback(self, client):
+        print("[BLE CALLBACK] Client with address {} got disconnected!".format(client.address))
+        self.root.status_label_set(f'Disconnect ! {client.address}')
+        self.root.clientlistbox_find_delete(client.address)
+        for i in range(len(self.connected_client)) :
+            if self.connected_client[i].address == client.address:
+                del self.connected_client[i]
+                break
+
+    """
+    thread task function
+    """  
     def do_asyncio_tasks(self):
+        print("[BTN EVENT] PROGRAM START")
         self.loop = asyncio.new_event_loop()
         threading.Thread(target=self.asyncio_thread).start()
 
     def do_asyncio_stop_tasks(self):
+        print("[BTN EVENT] PROGRAM STOP")
         threading.Thread(target=self.asyncio_stop_thread).start()
 
     def do_scan_tasks(self):
@@ -50,11 +91,15 @@ class BLE:
         threading.Thread(target=self.asyncio_ble_disconnect_thread).start()
     
     def do_ble_write_tasks(self, packet):
+        print("[BTN EVENT] BLE WRITE")
         threading.Thread(target=self.asyncio_ble_write_thread, args=(packet,)).start()
 
     def do_ble_write_loop_tasks(self, packet):
+        print("[BTN EVENT] BLE WRITE")
         threading.Thread(target=self.asyncio_ble_write_loop_thread, args=(packet,)).start()
-
+    """
+    asyncio thread function
+    """  
     def asyncio_thread(self):
         self.loop.run_until_complete(self.asyncio_start())
         self.loop.close()
@@ -64,7 +109,7 @@ class BLE:
         if self.is_running:
             self.loop.create_task(self.asyncio_stop())
         else :
-            print("비동기 루프 실행 상태가 아닙니다.")
+            print("[NOTIFICATION] It is not currently asynchronous.")
 
     def asyncio_scan_thread(self):
         self.loop.create_task(self.ble_scan())
@@ -73,7 +118,7 @@ class BLE:
         self.loop.create_task(self.ble_scan_stop())
 
     def asyncio_ble_connect_thread(self):
-        address = self.root.devicelistbox_return()
+        address = self.root.scanlistbox_return()
         if self.is_click_device(address) :
             self.loop.create_task(self.ble_connect(address))
         
@@ -102,29 +147,6 @@ class BLE:
                     self.vital_loop.append(self.connected_client[index].address)
                     self.loop.create_task(self.ble_write_loop(self.connected_client[index], packet))
 
-    def is_click_device(self, address):
-        if address:
-            return True
-        else:
-            print("Please select ble device !")
-            return False
-
-    def get_index_select_client(self, address):
-        for i in range(len(self.connected_client)):
-            if self.connected_client[i].address == address:
-                return i
-        print("Disconnected Device !")
-        return -1
-    def detection_callback(self, device, advertisement_data):
-        if device.name is not None:
-            device_info = f'{device.name} {device.address}'
-            if device_info not in self.devicelist:
-                self.devicelist.append(device_info)
-                self.root.devicelist_insert(len(self.devicelist)-1, device_info)
-
-    def get_is_running(self):
-        return self.is_running
-
     async def asyncio_start(self):
         if not self.is_running: 
             self.is_running = True
@@ -132,7 +154,7 @@ class BLE:
             while self.is_running:
                 await asyncio.sleep(1)
         else :
-            print("비동기 루프를 실행중입니다.")
+            print("[NOTIFICATION] It is currently asynchronous.")
 
     async def asyncio_stop(self):
         await self.ble_scan_stop()
@@ -140,63 +162,64 @@ class BLE:
         await asyncio.sleep(2)
         self.is_running = False
 
-
+    """
+    ble function
+    """  
     async def ble_scan(self):
         if not self.is_scanning : 
             self.scan_init()
             self.scanner = BleakScanner()
-            self.scanner.register_detection_callback(self.detection_callback)
+            self.scanner.register_detection_callback(self.scan_detection_callback)
             await self.scanner.start()
-            self.root.status_label_set("STATUS : Scanning..")
+            self.root.scan_status_label_set("Scanning..")
             self.is_scanning = True
         else :
-            print("스캔 상태 입니다.")
+            print("[NOTIFICATION] It is currently in scan state.")
 
     async def ble_scan_stop(self):
         if self.is_scanning:
             await self.scanner.stop()  
             self.is_scanning = False  
-            self.root.status_label_set("STATUS : Scan Stop")
+            self.root.scan_status_label_set("Scan Stop")
         else :
-            print("스캔 종료 상태 입니다.")
-    def on_disconnect(self, client):
-        print("[BLE CALLBACK] Client with address {} got disconnected!".format(client.address))
-        self.root.status_label_set(f'Disconnect ! {client.address}')
-        self.root.clientlistbox_find_delete(client.address)
-        for i in range(len(self.connected_client)) :
-            if self.connected_client[i].address == client.address:
-                del self.connected_client[i]
-                break
+            print("[NOTIFICATION] It is currently in scan stop state.")
+    
 
-    async def ble_connect(self, address):
-        self.root.status_label_set("STATUS : Connecting..")
-        self.connected_client.append(BleakClient(address.split(' ')[1]))
+    async def ble_connect(self, client_info):
+        self.root.status_label_set(f"Connecting.. {client_info.split(' ')[1]}")
+        self.connected_client.append(BleakClient(client_info.split(' ')[1]))
         client = self.connected_client[len(self.connected_client)-1]
         try:
-            client.set_disconnected_callback(self.on_disconnect)
+            client.set_disconnected_callback(self.ble_disconnect_callback)
             await client.connect()
-            self.root.clientlistbox_insert(len(self.connected_client)-1, address)
-            self.root.status_label_set(f"STATUS : Connected "+client.address)
+            self.root.clientlistbox_insert(len(self.connected_client)-1, client_info)
+            self.root.status_label_set(f"Connected {client.address}")
             await asyncio.sleep(1) 
             await self.ble_read_thread(client)
                 
         except Exception as e:
             print('[ERR] : ', e)
   
-
     async def ble_disconnect(self, address):
         for i in range(len(self.connected_client)) :
             if self.connected_client[i].address == address.split(' ')[1]:
-                
+                if self.connected_client[i].address in self.vital_loop:
+                    self.vital_loop.remove(self.connected_client[i].address)
                 await asyncio.sleep(1)
                 await self.connected_client[i].disconnect()
                 break
+
     async def ble_all_disconnect(self):
         temp_list = self.connected_client.copy()
         for i in range(len(temp_list)) :
+            self.vital_loop = []
             await asyncio.sleep(1)
             await temp_list[i].disconnect()
-
+        
+    async def ble_write(self, client, data):
+        print(f"[BLE] WRITE {client.address} : {print_hex(data)}")
+        self.root.write_label_set(print_hex(data))
+        await client.write_gatt_char(read_write_charcteristic_uuid,  data)
 
     async def ble_write_check(self, client, data):
         if len(data)>=17:
@@ -204,12 +227,6 @@ class BLE:
             await self.ble_write_check(data[16:len(data)])
         else:
             await self.ble_write(client, data[0:16])
-        
-    async def ble_write(self, client, data):
-        self.root.write_label_set(data)
-        await asyncio.sleep(1)
-        print(f"[BLE] WRITE {client.address} : {data}")
-        await client.write_gatt_char(read_write_charcteristic_uuid,  data)
 
     async def ble_write_loop(self, client, data):
         while  client.address in self.vital_loop:
@@ -218,9 +235,12 @@ class BLE:
 
     async def ble_read(self, client):
         read_data = await client.read_gatt_char(read_write_charcteristic_uuid)
-        print(f"[BLE] READ {client.address} : {read_data}")
+        print(f"[BLE] READ {client.address} : {print_hex(read_data)}")
+        self.root.read_label_set(print_hex(read_data))
+        
 
     async def ble_read_thread(self, client):
         while client.is_connected:
             await self.ble_read(client)
             await asyncio.sleep(2)
+    
