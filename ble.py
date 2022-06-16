@@ -57,10 +57,14 @@ class BLE:
         print("[BLE CALLBACK] Client with address {} got disconnected!".format(client.address))
         self.root.status_label_set(f'Disconnect ! {client.address}')
         self.root.clientlistbox_find_delete(client.address)
-        for i in range(len(self.connected_client)) :
-            if self.connected_client[i].address == client.address:
-                del self.connected_client[i]
-                break
+        if client.address in self.vital_loop:
+            self.vital_loop.remove(client.address)
+        if client in self.connected_client:
+            self.connected_client.remove(client)
+        # for i in range(len(self.connected_client)) :
+        #     if self.connected_client[i].address == client.address:
+        #         del self.connected_client[i]
+        #         break
 
     """
     thread task function
@@ -203,8 +207,7 @@ class BLE:
     async def ble_disconnect(self, address):
         for i in range(len(self.connected_client)) :
             if self.connected_client[i].address == address.split(' ')[1]:
-                if self.connected_client[i].address in self.vital_loop:
-                    self.vital_loop.remove(self.connected_client[i].address)
+                
                 await asyncio.sleep(1)
                 await self.connected_client[i].disconnect()
                 break
@@ -217,8 +220,9 @@ class BLE:
             await temp_list[i].disconnect()
         
     async def ble_write(self, client, data):
-        print(f"[BLE] WRITE {client.address} : {print_hex(data)}")
-        self.root.write_label_set(print_hex(data))
+        hex_data = print_hex(data)
+        print(f"[BLE] WRITE {client.address} : {hex_data}")
+        self.root.write_label_set(hex_data)
         await client.write_gatt_char(read_write_charcteristic_uuid,  data)
 
     async def ble_write_check(self, client, data):
@@ -229,14 +233,19 @@ class BLE:
             await self.ble_write(client, data[0:16])
 
     async def ble_write_loop(self, client, data):
-        while  client.address in self.vital_loop:
-            await self.ble_write_check(client, data)
-            await asyncio.sleep(1)
+        try:
+            while  client.address in self.vital_loop:
+                await self.ble_write_check(client, data)
+                await asyncio.sleep(2)
+        except:
+            pass
 
     async def ble_read(self, client):
         read_data = await client.read_gatt_char(read_write_charcteristic_uuid)
-        print(f"[BLE] READ {client.address} : {print_hex(read_data)}")
-        self.root.read_label_set(print_hex(read_data))
+        hex_data = print_hex(read_data)
+        print(f"[BLE] READ {client.address} : {hex_data}")
+        if hex_data !="":
+            self.root.read_label_set(hex_data)
         
 
     async def ble_read_thread(self, client):
