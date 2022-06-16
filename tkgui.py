@@ -1,4 +1,4 @@
-from tkinter import Tk, Label, Button, StringVar, constants, Frame, Listbox, Scrollbar, Text, messagebox, font
+from tkinter import DISABLED, NORMAL, Tk, Label, Button, StringVar, constants, Frame, Listbox, Scrollbar, Text, messagebox, font
 import ble as b
 import protocol
 
@@ -18,8 +18,8 @@ class TkGUI:
         program button
         """
         self.ble_start_btn = Button(self.root, text="PROGRAM START", bg='green', fg='white', font=font.Font(size=12, weight="bold"), command=self.loop.do_asyncio_tasks)
-        self.ble_stop_btn = Button(self.root, text="PROGRAM STOP", bg='green', fg='white', width=1080,font=font.Font(size=12, weight="bold"), command=self.loop.do_asyncio_stop_tasks)
-        
+        self.ble_stop_btn = Button(self.root, text="PROGRAM STOP", bg='green', fg='white', font=font.Font(size=12, weight="bold"), command=self.loop.do_asyncio_stop_tasks)
+        self.ble_stop_btn.pack(side="bottom")
         """
         scan frame
         """
@@ -162,11 +162,11 @@ class TkGUI:
         
     def connect_frame_show(self):
         self.frame_connect.pack(side="right", fill="both", expand=True)
-        self.ble_stop_btn.pack(side="bottom", fill="x")
+        self.ble_stop_btn['state'] = NORMAL
 
     def connect_frame_hide(self):
         self.frame_connect.pack_forget()
-        self.ble_stop_btn.pack_forget()
+        self.ble_stop_btn['state'] = DISABLED
 
     """
     label set function
