@@ -241,9 +241,9 @@ class BLE:
         await client.write_gatt_char(read_write_charcteristic_uuid,  data)
 
     async def ble_write_check(self, client, data):
-        if len(data)>=41:
-            await self.ble_write(client, data[0:40])
-            await self.ble_write_check(data[40:len(data)])
+        if len(data)>=21:
+            await self.ble_write(client, data[0:20])
+            await self.ble_write_check(data[20:len(data)])
         else:
             await self.ble_write(client, data)
 

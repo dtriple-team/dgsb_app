@@ -25,7 +25,7 @@ class TkGUI:
         """
         self.frame_scan = Frame(self.root)
         self.scan_status_text = StringVar()
-        self.scan_status_label = Label(self.frame_scan, textvariable=self.scan_status_text)
+        self.scan_status_label = Label(self.frame_scan, font=font.Font(size=10, weight="bold"), textvariable=self.scan_status_text)
         self.scan_btn = Button(self.frame_scan, text="BLE Scan", command=self.loop.do_scan_tasks)
         self.scan_stop_btn = Button(self.frame_scan, text="BLE Scan Stop", command=self.loop.do_scan_stop_tasks)
         self.connect_btn = Button(self.frame_scan, text="BLE Connect", command=self.loop.do_ble_connect_tasks)
@@ -50,7 +50,7 @@ class TkGUI:
         """
         self.frame_connect = Frame(self.root)
         self.status_text = StringVar()
-        self.status_label = Label(self.frame_connect, textvariable=self.status_text)
+        self.status_label = Label(self.frame_connect, font=font.Font(size=10, weight="bold"), textvariable=self.status_text)
         self.disconnect_btn = Button(self.frame_connect, text="BLE Disconnect", command=self.loop.do_ble_disconnect_tasks)
         self.measure_btn = Button(self.frame_connect, text="Measure Start", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_START_MEASURE))
         self.stop_btn = Button(self.frame_connect, text="Measure Stop", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_STOP_MEASURE))
@@ -58,13 +58,21 @@ class TkGUI:
         self.get_hr_btn = Button(self.frame_connect, text="GET HR", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_HR))
         self.get_hr_continue = Button(self.frame_connect, text="GET HR Continue",command=lambda:self.loop.do_ble_write_loop_tasks(protocol.REQ_GET_HR))
         self.get_spo2_btn = Button(self.frame_connect, text="GET SPO2", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_SPO2))
-        self.get_walk_step_btn = Button(self.frame_connect, text="GET WALKSTEP", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_WALK))
-        self.get_run_step_btn = Button(self.frame_connect, text="GET RUNSTEP", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_RUN))
-        self.get_all_btn = Button(self.frame_connect, text="GET ALL", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_ALL))
+        self.get_walk_run_step_btn = Button(self.frame_connect, text="GET WALK/RUN_STEP", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_WALK_RUN))
+        self.get_motion_flag = Button(self.frame_connect, text="GET MOTION_FLAG", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_MOTION_FLAG))
+        self.get_activity = Button(self.frame_connect, text="GET ACTIVITY", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_ACTIVITY))
+        
+        
         self.get_battery_btn = Button(self.frame_connect, text="GET BATTERY", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_BATT))
         self.get_scd_btn = Button(self.frame_connect, text="GET SCD", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_SCD))
         self.get_acc_btn = Button(self.frame_connect, text="GET ACC", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_ACC))
         self.get_gyro_btn = Button(self.frame_connect, text="GET GYRO", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_GYRO))
+        
+        self.get_falldetect = Button(self.frame_connect, text="GET FALL_DETECT", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_FALL_DETECT))
+        self.get_temperature = Button(self.frame_connect, text="GET TEMP", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_TEMP))
+        self.get_pressure = Button(self.frame_connect, text="GET PRESSURE", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_PRESSURE))
+
+        self.get_all_btn = Button(self.frame_connect, text="GET ALL", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_ALL_DATA))
         self.get_max32630_btn = Button(self.frame_connect, text="GET MAX32630", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_MAX32630))
         self.random_btn = Button(self.frame_connect, text="Random Data")
         
@@ -96,19 +104,26 @@ class TkGUI:
         self.get_hr_btn.grid(row=2, column=0, sticky=constants.W)
         self.get_hr_continue.grid(row=2, column=1, sticky=constants.W)
         self.get_spo2_btn.grid(row=2, column=2, sticky=constants.W)
-        self.get_walk_step_btn.grid(row=3, column=0, sticky=constants.W)
-        self.get_run_step_btn.grid(row=3, column=1, sticky=constants.W)
-        self.get_all_btn.grid(row=3, column=2, sticky=constants.W)
+        self.get_walk_run_step_btn.grid(row=3, column=0, sticky=constants.W)
+        
+        self.get_motion_flag.grid(row=3, column=1, sticky=constants.W)
+        
+        self.get_activity.grid(row=3, column=2, sticky=constants.W)
         self.get_battery_btn.grid(row=4, column=0, sticky=constants.W)
         self.get_scd_btn.grid(row=4, column=1, sticky=constants.W)
         self.get_acc_btn.grid(row=4, column=2, sticky=constants.W)
         self.get_gyro_btn.grid(row=5, column=0, sticky=constants.W)
-        self.get_max32630_btn.grid(row=5, column=1, sticky=constants.W)
+        self.get_falldetect.grid(row=5, column=1, sticky=constants.W)
+        self.get_temperature.grid(row=5, column=2, sticky=constants.W)
+        self.get_pressure.grid(row=6, column=0, sticky=constants.W)
 
+        self.get_all_btn.grid(row=6, column=1, sticky=constants.W)
 
-        self.random_btn.grid(row=5, column=2, sticky=constants.W)
-        self.write_label.grid(row=6, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
-        self.read_label.grid(row=7, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
+        
+        self.get_max32630_btn.grid(row=6, column=2, sticky=constants.W)
+        self.random_btn.grid(row=7, column=0, sticky=constants.W)
+        # self.write_label.grid(row=6, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
+        # self.read_label.grid(row=7, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
         self.title_connected_device_list.grid(row=8, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
         self.client_frame.grid(row=9, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S)
         self.client_scrollbar.pack(side=constants.RIGHT, fill=constants.Y)
