@@ -1,7 +1,7 @@
-import asyncio, threading
+import asyncio, threading, file, protocol
 from bleak import BleakClient, BleakScanner
 from ble_print import print_hex
-
+file_test = False
 read_write_charcteristic_uuid = "f0001111-0451-4000-b000-000000000000"
 class BLE:
     def __init__(self):
@@ -18,7 +18,11 @@ class BLE:
 
         self.is_running = False
         self.vital_loop = []
-
+        self.random_loop = []
+        if file_test:
+            self.file_write_ble = file.File()
+            self.file_write_ble.file_write_init("ble.txt")
+        
     def root_connect(self, root):
         self.root = root
 
@@ -47,7 +51,7 @@ class BLE:
     callback function
     """  
     def scan_detection_callback(self, device, advertisement_data):
-        if device.name is not None:
+        if device.name is not None and "DGSB" in device.name:
             device_info = f'{device.name} {device.address}'
             if device_info not in self.devicelist:
                 self.devicelist.append(device_info)
@@ -61,10 +65,6 @@ class BLE:
             self.vital_loop.remove(client.address)
         if client in self.connected_client:
             self.connected_client.remove(client)
-        # for i in range(len(self.connected_client)) :
-        #     if self.connected_client[i].address == client.address:
-        #         del self.connected_client[i]
-        #         break
 
     """
     thread task function
@@ -101,12 +101,17 @@ class BLE:
     def do_ble_write_loop_tasks(self, packet):
         print("[BTN EVENT] BLE WRITE")
         threading.Thread(target=self.asyncio_ble_write_loop_thread, args=(packet,)).start()
+    def do_ble_write_random_loop_tasks(self):
+        print("[BTN EVENT] BLE WRITE")
+        threading.Thread(target=self.asyncio_ble_write_random_loop_thread).start()
     """
     asyncio thread function
     """  
     def asyncio_thread(self):
         self.loop.run_until_complete(self.asyncio_start())
         self.loop.close()
+        if file_test :
+            self.file_write_ble.file_write_close()
         self.root.change_ui(self.is_running)
 
     def asyncio_stop_thread(self):
@@ -150,7 +155,16 @@ class BLE:
                 else:
                     self.vital_loop.append(self.connected_client[index].address)
                     self.loop.create_task(self.ble_write_loop(self.connected_client[index], packet))
-
+    def asyncio_ble_write_random_loop_thread(self):
+        address = self.root.clientlistbox_return()
+        if self.is_click_device(address):
+            index = self.get_index_select_client(address.split(' ')[1])
+            if index >= 0 :
+                if self.connected_client[index].address in self.random_loop:
+                    self.random_loop.remove(self.connected_client[index].address)
+                else:
+                    self.random_loop.append(self.connected_client[index].address)
+                    self.loop.create_task(self.ble_write_random_loop(self.connected_client[index]))
     async def asyncio_start(self):
         if not self.is_running: 
             self.is_running = True
@@ -223,6 +237,8 @@ class BLE:
         hex_data = print_hex(data)
         print(f"[BLE] WRITE {client.address} : {hex_data}")
         self.root.write_label_set(hex_data)
+        if file_test:
+            self.file_write_ble.file_write_time("WRITE", hex_data)
         await client.write_gatt_char(read_write_charcteristic_uuid,  data)
 
     async def ble_write_check(self, client, data):
@@ -239,17 +255,31 @@ class BLE:
                 await asyncio.sleep(2)
         except:
             pass
+    async def ble_write_random_loop(self, client):
+        try:
+            data = [protocol.REQ_GET_SPO2, protocol.REQ_GET_HR, protocol.REQ_GET_WALK, protocol.REQ_GET_RUN]
+            i = 0
+            while client.address in self.random_loop:
+                if i>=len(data)-1: 
+                    i=0
+                await self.ble_write_check(client, data[i])
+                await asyncio.sleep(2)
+                i+=1
+        except:
+            pass
 
     async def ble_read(self, client):
         read_data = await client.read_gatt_char(read_write_charcteristic_uuid)
         hex_data = print_hex(read_data)
-        print(f"[BLE] READ {client.address} : {hex_data}")
         if hex_data !="":
+            print(f"[BLE] READ {client.address} : {hex_data}")
+            if file_test:
+                self.file_write_ble.file_write_time("READ",hex_data)
             self.root.read_label_set(hex_data)
         
 
     async def ble_read_thread(self, client):
         while client.is_connected:
             await self.ble_read(client)
-            await asyncio.sleep(2)
+            await asyncio.sleep(0.1)
     

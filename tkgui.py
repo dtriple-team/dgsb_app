@@ -10,7 +10,7 @@ class TkGUI:
         """
         root 
         """
-        self.root.title("GUI TEST")
+        self.root.title("BLE TEST")
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.root.geometry("1080x600")
 
