@@ -236,7 +236,6 @@ class BLE:
     async def ble_write(self, client, data):
         hex_data = print_hex(data)
         print(f"[BLE] WRITE {client.address} : {hex_data}")
-        self.root.write_label_set(hex_data)
         if file_test:
             self.file_write_ble.file_write_time("WRITE", hex_data)
         await client.write_gatt_char(read_write_charcteristic_uuid,  data)
@@ -275,7 +274,6 @@ class BLE:
             print(f"[BLE] READ {client.address} : {hex_data}")
             if file_test:
                 self.file_write_ble.file_write_time("READ",hex_data)
-            self.root.read_label_set(hex_data)
         
 
     async def ble_read_thread(self, client):
