@@ -75,7 +75,7 @@ class TkGUI:
         self.get_all_btn = Button(self.frame_connect, text="GET ALL", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_ALL_DATA))
         self.get_max32630_btn = Button(self.frame_connect, text="GET MAX32630", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_MAX32630))
         self.random_btn = Button(self.frame_connect, text="Random Data")
-        self.get_all_continue = Button(self.frame_connect, text="GET ALL Continue",command=lambda:self.loop.do_ble_write_loop_tasks(protocol.REQ_GET_ALL_DATA, 2.0))
+        self.get_all_continue = Button(self.frame_connect, text="GET ALL Continue",command=lambda:self.loop.do_ble_write_loop_tasks(protocol.REQ_GET_ALL_DATA, 1.0))
         self.read_text = StringVar()
         self.read_text.set("READ DATA : ")
         self.write_text = StringVar()
