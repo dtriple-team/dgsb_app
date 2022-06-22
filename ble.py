@@ -98,9 +98,9 @@ class BLE:
         print("[BTN EVENT] BLE WRITE")
         threading.Thread(target=self.asyncio_ble_write_thread, args=(packet,)).start()
 
-    def do_ble_write_loop_tasks(self, packet):
+    def do_ble_write_loop_tasks(self, packet, time):
         print("[BTN EVENT] BLE WRITE")
-        threading.Thread(target=self.asyncio_ble_write_loop_thread, args=(packet,)).start()
+        threading.Thread(target=self.asyncio_ble_write_loop_thread, args=(packet,time,)).start()
     def do_ble_write_random_loop_tasks(self):
         print("[BTN EVENT] BLE WRITE")
         threading.Thread(target=self.asyncio_ble_write_random_loop_thread).start()
@@ -145,7 +145,7 @@ class BLE:
                     self.vital_loop.remove(self.connected_client[index].address)
                 self.loop.create_task(self.ble_write_check(self.connected_client[index], packet))
 
-    def asyncio_ble_write_loop_thread(self, packet):
+    def asyncio_ble_write_loop_thread(self, packet, time):
         address = self.root.clientlistbox_return()
         if self.is_click_device(address):
             index = self.get_index_select_client(address.split(' ')[1])
@@ -154,7 +154,7 @@ class BLE:
                     self.vital_loop.remove(self.connected_client[index].address)
                 else:
                     self.vital_loop.append(self.connected_client[index].address)
-                    self.loop.create_task(self.ble_write_loop(self.connected_client[index], packet))
+                    self.loop.create_task(self.ble_write_loop(self.connected_client[index], packet, time))
     def asyncio_ble_write_random_loop_thread(self):
         address = self.root.clientlistbox_return()
         if self.is_click_device(address):
@@ -247,11 +247,11 @@ class BLE:
         else:
             await self.ble_write(client, data)
 
-    async def ble_write_loop(self, client, data):
+    async def ble_write_loop(self, client, data, time):
         try:
             while  client.address in self.vital_loop:
                 await self.ble_write_check(client, data)
-                await asyncio.sleep(2)
+                await asyncio.sleep(time)
         except:
             pass
     async def ble_write_random_loop(self, client):
@@ -281,3 +281,4 @@ class BLE:
             await self.ble_read(client)
             await asyncio.sleep(0.1)
     
+

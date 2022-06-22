@@ -56,7 +56,7 @@ class TkGUI:
         self.stop_btn = Button(self.frame_connect, text="Measure Stop", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_STOP_MEASURE))
         
         self.get_hr_btn = Button(self.frame_connect, text="GET HR", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_HR))
-        self.get_hr_continue = Button(self.frame_connect, text="GET HR Continue",command=lambda:self.loop.do_ble_write_loop_tasks(protocol.REQ_GET_HR))
+        self.get_hr_continue = Button(self.frame_connect, text="GET HR Continue",command=lambda:self.loop.do_ble_write_loop_tasks(protocol.REQ_GET_HR, 1.0))
         self.get_spo2_btn = Button(self.frame_connect, text="GET SPO2", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_SPO2))
         self.get_walk_run_step_btn = Button(self.frame_connect, text="GET WALK/RUN_STEP", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_WALK_RUN))
         self.get_motion_flag = Button(self.frame_connect, text="GET MOTION_FLAG", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_MOTION_FLAG))
@@ -75,7 +75,7 @@ class TkGUI:
         self.get_all_btn = Button(self.frame_connect, text="GET ALL", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_ALL_DATA))
         self.get_max32630_btn = Button(self.frame_connect, text="GET MAX32630", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_MAX32630))
         self.random_btn = Button(self.frame_connect, text="Random Data")
-        
+        self.get_all_continue = Button(self.frame_connect, text="GET ALL Continue",command=lambda:self.loop.do_ble_write_loop_tasks(protocol.REQ_GET_ALL_DATA, 2.0))
         self.read_text = StringVar()
         self.read_text.set("READ DATA : ")
         self.write_text = StringVar()
@@ -122,6 +122,7 @@ class TkGUI:
         
         self.get_max32630_btn.grid(row=6, column=2, sticky=constants.W)
         self.random_btn.grid(row=7, column=0, sticky=constants.W)
+        self.get_all_continue.grid(row=7, column=1, sticky=constants.W)
         # self.write_label.grid(row=6, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
         # self.read_label.grid(row=7, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
         self.title_connected_device_list.grid(row=8, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
