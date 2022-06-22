@@ -19,6 +19,7 @@ class BLE:
         self.is_running = False
         self.vital_loop = []
         self.random_loop = []
+        self.read_list = []
         if file_test:
             self.file_write_ble = file.File()
             self.file_write_ble.file_write_init("ble.txt")
@@ -44,7 +45,11 @@ class BLE:
                 return i
         print("[NOTIFICATION] Disconnected Device !")
         return -1
-
+    def check_same_data(self, list, data):
+        for l in list:
+            if l.address == data:
+                return True
+        return False
     def get_is_running(self):
         return self.is_running
     """
@@ -205,18 +210,23 @@ class BLE:
 
     async def ble_connect(self, client_info):
         self.root.status_label_set(f"Connecting.. {client_info.split(' ')[1]}")
-        self.connected_client.append(BleakClient(client_info.split(' ')[1]))
-        client = self.connected_client[len(self.connected_client)-1]
-        try:
-            client.set_disconnected_callback(self.ble_disconnect_callback)
-            await client.connect()
-            self.root.clientlistbox_insert(len(self.connected_client)-1, client_info)
-            self.root.status_label_set(f"Connected {client.address}")
-            await asyncio.sleep(1) 
-            await self.ble_read_thread(client)
-                
-        except Exception as e:
-            print('[ERR] : ', e)
+        if not self.check_same_data(self.connected_client, client_info.split(' ')[1]):
+
+            self.connected_client.append(BleakClient(client_info.split(' ')[1]))
+            client = self.connected_client[len(self.connected_client)-1]
+            try:
+                client.set_disconnected_callback(self.ble_disconnect_callback)
+                await client.connect()
+                await asyncio.sleep(1)
+                self.root.clientlistbox_insert(len(self.connected_client)-1, client_info)
+                self.root.status_label_set(f"Connected {client.address}")
+                await asyncio.sleep(1) 
+                await self.ble_read_thread(client)
+                    
+            except Exception as e:
+                print('[ERR] : ', e)
+        else:
+            print("[BLE] Already connected")
   
     async def ble_disconnect(self, address):
         for i in range(len(self.connected_client)) :
@@ -256,29 +266,139 @@ class BLE:
             pass
     async def ble_write_random_loop(self, client):
         try:
-            data = [protocol.REQ_GET_SPO2, protocol.REQ_GET_HR, protocol.REQ_GET_WALK, protocol.REQ_GET_RUN]
+            data = [protocol.REQ_GET_SPO2, protocol.REQ_GET_HR, protocol.REQ_GET_WALK_RUN, protocol.REQ_GET_MOTION_FLAG, protocol.REQ_GET_ACTIVITY, protocol.REQ_GET_BATT, protocol.REQ_GET_SCD, protocol.REQ_GET_ACC, protocol.REQ_GET_ALL_DATA]
+            # data = [protocol.REQ_GET_SPO2, protocol.REQ_GET_HR]
             i = 0
             while client.address in self.random_loop:
-                if i>=len(data)-1: 
+                if i>=len(data): 
                     i=0
                 await self.ble_write_check(client, data[i])
-                await asyncio.sleep(2)
+                await asyncio.sleep(0.3)
                 i+=1
         except:
             pass
 
     async def ble_read(self, client):
         read_data = await client.read_gatt_char(read_write_charcteristic_uuid)
-        hex_data = print_hex(read_data)
-        if hex_data !="":
+        if read_data != bytearray() :
+            # self.ble_read_parsing(read_data)
+            hex_data = print_hex(read_data)
             print(f"[BLE] READ {client.address} : {hex_data}")
             if file_test:
                 self.file_write_ble.file_write_time("READ",hex_data)
-        
+
 
     async def ble_read_thread(self, client):
         while client.is_connected:
             await self.ble_read(client)
             await asyncio.sleep(0.1)
-    
+
+    def ble_read_parsing(self, data):
+        for i in list(data):
+            if not self.read_list and i==2 :
+                if i==2:
+                    self.read_list.append(i)
+                else :
+                    print("[BLE READ] ERROR PACKET")
+                    self.read_list = []
+            else :
+                self.read_list.append(i)
+                if len(self.read_list)>=4 and len(self.read_list) == self.read_list[3]+6:
+                    if i==3:
+                        print(hex(self.read_list[1]), self.read_list[5:len(self.read_list)-1])
+                        self.ble_read_classify_cmd(hex(self.read_list[1]), self.read_list[5:len(self.read_list)-1])
+                        # print(f"[BLE READ] SUCCESS! CMD : {protocol.RESP_CMD[self.read_list[1]]} DATA : {self.read_list[5:len(self.read_list)-1]}")
+                    else:
+                        print("[BLE READ] ERROR PACKET")
+                    self.read_list = []
+
+    def ble_read_classify_cmd(self, cmd, data):
+        if cmd == "0x83":
+            spo2 = data[0]<<8 | data[1]
+            spo2_confidence = data[2]
+            print(f"spo2 = {spo2}, spo2_confidence = {spo2_confidence}")
+
+        elif cmd == "0x84":
+            hr = data[0]<<8 | data[1]
+            hr_confidence = data[2]
+            print(f"hr = {hr}, hr_confidence = {hr_confidence}")
+
+        elif cmd == "0x85":
+            walk = data[0]<<24 | data[1]<<16 | data[2]<<8 | data[3]
+            run = data[4]<<24 | data[5]<<16 | data[6]<<8 | data[7]
+            print(f"walk step = {walk}, run step = {run}")
+
+        elif cmd == "0x86":
+            motion_flag = data[0]<<8 | data[1]
+            print(f"motion_flag = {motion_flag}")
+
+        elif cmd == "0x87":
+            print(f"activity = {data[0]}")
+
+        elif cmd == "0x88":
+            print(f"battery = {data[0]}")
+
+        elif cmd == "0x89":
+            scd = data[0]<<24 | data[1]<<16 | data[2]<<8 | data[3]
+            print(f"scd = {scd}")
+
+        elif cmd == "0x8a":
+            acc_x = data[0]<<8 | data[1]
+            acc_y = data[2]<<8 | data[3]
+            acc_z = data[4]<<8 | data[5]
+            print(f"acc_x = {acc_x}, acc_y = {acc_y}, acc_z = {acc_z}")
+
+        elif cmd == "0x8b":
+            gyro_x = data[0]<<8 | data[1]
+            gyro_y = data[2]<<8 | data[3]
+            gyro_z = data[4]<<8 | data[5]
+            print(f"gyro_x = {gyro_x}, gyro_y = {gyro_y}, gyro_z = {gyro_z}")
+        
+        elif cmd == "0x8c":
+            print(f"fall_detect = {data[0]}")
+        
+        elif cmd == "0x8d":
+            temp = data[0]<<8 | data[1]
+            print(f"temp = {temp}")
+        
+        elif cmd == "0x8e":
+            pressure = data[0]<<8 | data[1]
+            print(f"pressure = {pressure}")
+        
+        elif cmd == "0x8f":
+            spo2 = data[0]<<8 | data[1]
+            spo2_confidence = data[2]
+            hr = data[3]<<8 | data[4]
+            hr_confidence = data[5]
+            walk = data[6]<<24 | data[7]<<16 | data[8]<<8 | data[9]
+            run = data[10]<<24 | data[11]<<16 | data[12]<<8 | data[13]
+            motion_flag = data[14]<<8 | data[15]
+            activity = data[16]
+            battery = data[17]
+            scd = data[18]<<24 | data[19]<<16 | data[20]<<8 | data[21]
+            acc_x = data[22]<<8 | data[23]
+            acc_y = data[24]<<8 | data[25]
+            acc_z = data[26]<<8 | data[27]
+            gyro_x = data[28]<<8 | data[29]
+            gyro_y = data[30]<<8 | data[31]
+            gyro_z = data[32]<<8 | data[33]
+            fall_detect = data[34]
+            temp = data[35]
+            pressure = data[36]<<8 | data[37]
+            height = data[38]
+            weight = data[39]
+            age = data[40]
+            gender = data[41]
+            print(f"spo2 = {spo2}, spo2_confidence = {spo2_confidence} / hr = {hr}, hr_confidence = {hr_confidence} / walk step = {walk}, run step = {run} / motion_flag = {motion_flag} / activity = {activity} / battery = {battery} / scd = {scd} / acc_x = {acc_x}, acc_y = {acc_y}, acc_z = {acc_z} / gyro_x = {gyro_x}, gyro_y = {gyro_y}, gyro_z = {gyro_z} / fall_detect = {fall_detect} / temp = {temp} / pressure = {pressure} / height = {height}, weight = {weight}, age = {age}, gender = {gender}")
+            
+        elif cmd == "0x90":
+            height = data[0]
+            weight = data[1]
+            age = data[2]
+            gender = data[3]
+            print(f"height = {height}, weight = {weight}, age = {age}, gender = {gender}")
+
+
+
+
 
