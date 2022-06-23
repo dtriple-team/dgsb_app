@@ -23,7 +23,7 @@ class BLE:
         if file_test:
             self.file_write_ble = file.File()
             self.file_write_ble.file_write_init("ble_log.txt")
-        
+            
     def root_connect(self, root):
         self.root = root
 
@@ -215,6 +215,7 @@ class BLE:
             try:
                 client.set_disconnected_callback(self.ble_disconnect_callback)
                 await client.connect()
+                print("[BLE] Connect Success!")
                 await asyncio.sleep(1)
                 self.root.clientlistbox_insert(len(self.connected_client)-1, client_info)
                 self.root.status_label_set(f"Connected {client.address}")
@@ -245,7 +246,7 @@ class BLE:
         hex_data = print_hex(data)
         print(f"[BLE] WRITE {client.address} : {hex_data}")
         if file_test:
-            self.file_write_ble.file_write_time("[WRITE]", hex_data)
+            self.file_write_ble.file_write_time("WRITE", hex_data)
         await client.write_gatt_char(read_write_charcteristic_uuid,  data)
 
     async def ble_write_check(self, client, data):
@@ -283,7 +284,7 @@ class BLE:
             hex_data = print_hex(read_data)
             print(f"[BLE] READ {client.address} : {hex_data}")
             if file_test:
-                self.file_write_ble.file_write_time("[READ]",hex_data)
+                self.file_write_ble.file_write_time("READ",hex_data)
 
 
     async def ble_read_thread(self, client):
