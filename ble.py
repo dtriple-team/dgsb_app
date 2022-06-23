@@ -22,8 +22,6 @@ class BLE:
         self.read_list = []
         if file_test:
             self.file_write_ble = file.File()
-            self.file_write_ble.file_write_init("ble_log.txt")
-            
     def root_connect(self, root):
         self.root = root
 
