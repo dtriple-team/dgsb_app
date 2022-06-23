@@ -1,7 +1,7 @@
 import asyncio, threading, file, protocol
 from bleak import BleakClient, BleakScanner
 from ble_print import print_hex
-file_test = False
+file_test = True
 read_write_charcteristic_uuid = "f0001111-0451-4000-b000-000000000000"
 class BLE:
     def __init__(self):
@@ -22,7 +22,7 @@ class BLE:
         self.read_list = []
         if file_test:
             self.file_write_ble = file.File()
-            self.file_write_ble.file_write_init("ble.txt")
+            self.file_write_ble.file_write_init("ble_log.txt")
         
     def root_connect(self, root):
         self.root = root
@@ -115,8 +115,6 @@ class BLE:
     def asyncio_thread(self):
         self.loop.run_until_complete(self.asyncio_start())
         self.loop.close()
-        if file_test :
-            self.file_write_ble.file_write_close()
         self.root.change_ui(self.is_running)
 
     def asyncio_stop_thread(self):
@@ -247,7 +245,7 @@ class BLE:
         hex_data = print_hex(data)
         print(f"[BLE] WRITE {client.address} : {hex_data}")
         if file_test:
-            self.file_write_ble.file_write_time("WRITE", hex_data)
+            self.file_write_ble.file_write_time("[WRITE]", hex_data)
         await client.write_gatt_char(read_write_charcteristic_uuid,  data)
 
     async def ble_write_check(self, client, data):
@@ -285,7 +283,7 @@ class BLE:
             hex_data = print_hex(read_data)
             print(f"[BLE] READ {client.address} : {hex_data}")
             if file_test:
-                self.file_write_ble.file_write_time("READ",hex_data)
+                self.file_write_ble.file_write_time("[READ]",hex_data)
 
 
     async def ble_read_thread(self, client):

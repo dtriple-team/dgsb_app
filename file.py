@@ -11,5 +11,6 @@ class File:
         self.fw.write(f'[{title}] data = {data}')
     def file_write_time(self, title, data):
         self.fw.write(f'[{title}] data = {data} / datetime = {datetime.now()}\n')
+        self.fw.close()
     def file_write_close(self):
         self.fw.close()
