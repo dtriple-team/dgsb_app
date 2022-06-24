@@ -1,4 +1,4 @@
-import asyncio, threading, file, protocol
+import asyncio, threading, file, protocol, time
 from bleak import BleakClient, BleakScanner
 from ble_print import print_hex
 file_test = True
@@ -19,7 +19,8 @@ class BLE:
         self.is_running = False
         self.vital_loop = []
         self.random_loop = []
-        self.read_list = []
+        self.read_packet = []
+        self.read_packet_list = []
         if file_test:
             self.file_write_ble = file.File()
     def root_connect(self, root):
@@ -171,7 +172,7 @@ class BLE:
             self.is_running = True
             self.root.change_ui(self.is_running)
             while self.is_running:
-                await asyncio.sleep(1)
+                await self.ble_read_packet_list_thread()
         else :
             print("[NOTIFICATION] It is currently asynchronous.")
 
@@ -219,7 +220,6 @@ class BLE:
                 self.root.status_label_set(f"Connected {client.address}")
                 await asyncio.sleep(1) 
                 await self.ble_read_thread(client)
-                    
             except Exception as e:
                 print('[ERR] : ', e)
         else:
@@ -270,19 +270,19 @@ class BLE:
                 if i>=len(data): 
                     i=0
                 await self.ble_write_check(client, data[i])
-                await asyncio.sleep(0.3)
+                await asyncio.sleep(1)
                 i+=1
         except:
             pass
 
     async def ble_read(self, client):
-        read_data = await client.read_gatt_char(read_write_charcteristic_uuid)
-        if read_data != bytearray() :
-            # self.ble_read_parsing(read_data)
-            hex_data = print_hex(read_data)
-            print(f"[BLE] READ {client.address} : {hex_data}")
-            if file_test:
-                self.file_write_ble.file_write_time("READ",hex_data)
+        self.read_packet_list.append(await client.read_gatt_char(read_write_charcteristic_uuid))
+        # if read_data != bytearray() :
+        #     # hex_data = print_hex(read_data)
+        #     # print(f"[BLE] READ {client.address} : {hex_data}")
+        #     self.ble_read_parsing(read_data)
+        #     # if file_test:
+        #     #     self.file_write_ble.file_write_time("READ",hex_data)
 
 
     async def ble_read_thread(self, client):
@@ -290,24 +290,39 @@ class BLE:
             await self.ble_read(client)
             await asyncio.sleep(0.1)
 
+    async def ble_read_packet_list_thread(self):
+        await asyncio.sleep(0.01)
+        # start = time.time()
+        for l in self.read_packet_list:
+            if l != bytearray():
+                # self.ble_read_parsing(l)
+                hex_data = print_hex(l)
+                print(f"[BLE] READ : {hex_data}")
+                if file_test:
+                    self.file_write_ble.file_write_time("READ",hex_data)
+        # end = time.time()
+        # if end-start != 0.0:
+        #     print("time ! : ", end-start)
+
+        self.read_packet_list.clear()        
     def ble_read_parsing(self, data):
         for i in list(data):
-            if not self.read_list and i==2 :
+            if not self.read_packet and i==2 :
                 if i==2:
-                    self.read_list.append(i)
+                    self.read_packet.append(i)
                 else :
                     print("[BLE READ] ERROR PACKET")
-                    self.read_list = []
+                    self.read_packet = []
             else :
-                self.read_list.append(i)
-                if len(self.read_list)>=4 and len(self.read_list) == self.read_list[3]+6:
+                self.read_packet.append(i)
+                if len(self.read_packet)>=4 and len(self.read_packet) == self.read_packet[3]+6:
                     if i==3:
-                        print(hex(self.read_list[1]), self.read_list[5:len(self.read_list)-1])
-                        self.ble_read_classify_cmd(hex(self.read_list[1]), self.read_list[5:len(self.read_list)-1])
-                        # print(f"[BLE READ] SUCCESS! CMD : {protocol.RESP_CMD[self.read_list[1]]} DATA : {self.read_list[5:len(self.read_list)-1]}")
+                        print(hex(self.read_packet[1]), self.read_packet[5:len(self.read_packet)-1])
+                        self.ble_read_classify_cmd(hex(self.read_packet[1]), self.read_packet[5:len(self.read_packet)-1])
+                        # print(f"[BLE READ] SUCCESS! CMD : {protocol.RESP_CMD[self.read_packet[1]]} DATA : {self.read_packet[5:len(self.read_packet)-1]}")
                     else:
                         print("[BLE READ] ERROR PACKET")
-                    self.read_list = []
+                    self.read_packet = []
 
     def ble_read_classify_cmd(self, cmd, data):
         if cmd == "0x83":
@@ -326,7 +341,7 @@ class BLE:
             print(f"walk step = {walk}, run step = {run}")
 
         elif cmd == "0x86":
-            motion_flag = data[0]<<8 | data[1]
+            motion_flag = data[0]
             print(f"motion_flag = {motion_flag}")
 
         elif cmd == "0x87":
@@ -336,15 +351,15 @@ class BLE:
             print(f"battery = {data[0]}")
 
         elif cmd == "0x89":
-            scd = data[0]<<24 | data[1]<<16 | data[2]<<8 | data[3]
+            scd = data[0]
             print(f"scd = {scd}")
 
         elif cmd == "0x8a":
             acc_x = data[0]<<8 | data[1]
             acc_y = data[2]<<8 | data[3]
             acc_z = data[4]<<8 | data[5]
+            print(f"acc_x = {0x10000-acc_x}, acc_y = {0x10000-acc_y}, acc_z = {0x10000-acc_z}")
             print(f"acc_x = {acc_x}, acc_y = {acc_y}, acc_z = {acc_z}")
-
         elif cmd == "0x8b":
             gyro_x = data[0]<<8 | data[1]
             gyro_y = data[2]<<8 | data[3]
@@ -369,23 +384,23 @@ class BLE:
             hr_confidence = data[5]
             walk = data[6]<<24 | data[7]<<16 | data[8]<<8 | data[9]
             run = data[10]<<24 | data[11]<<16 | data[12]<<8 | data[13]
-            motion_flag = data[14]<<8 | data[15]
-            activity = data[16]
-            battery = data[17]
-            scd = data[18]<<24 | data[19]<<16 | data[20]<<8 | data[21]
-            acc_x = data[22]<<8 | data[23]
-            acc_y = data[24]<<8 | data[25]
-            acc_z = data[26]<<8 | data[27]
-            gyro_x = data[28]<<8 | data[29]
-            gyro_y = data[30]<<8 | data[31]
-            gyro_z = data[32]<<8 | data[33]
-            fall_detect = data[34]
-            temp = data[35]
-            pressure = data[36]<<8 | data[37]
-            height = data[38]
-            weight = data[39]
-            age = data[40]
-            gender = data[41]
+            motion_flag = data[14]
+            activity = data[15]
+            battery = data[16]
+            scd = data[17]
+            acc_x = data[18]<<8 | data[19]
+            acc_y = data[20]<<8 | data[21]
+            acc_z = data[22]<<8 | data[23]
+            gyro_x = data[24]<<8 | data[25]
+            gyro_y = data[26]<<8 | data[27]
+            gyro_z = data[28]<<8 | data[29]
+            fall_detect = data[30]
+            temp = data[31]<<8 | data[32]
+            pressure = data[33]<<8 | data[34]
+            height = data[35]
+            weight = data[36]
+            age = data[37]
+            gender = data[38]
             print(f"spo2 = {spo2}, spo2_confidence = {spo2_confidence} / hr = {hr}, hr_confidence = {hr_confidence} / walk step = {walk}, run step = {run} / motion_flag = {motion_flag} / activity = {activity} / battery = {battery} / scd = {scd} / acc_x = {acc_x}, acc_y = {acc_y}, acc_z = {acc_z} / gyro_x = {gyro_x}, gyro_y = {gyro_y}, gyro_z = {gyro_z} / fall_detect = {fall_detect} / temp = {temp} / pressure = {pressure} / height = {height}, weight = {weight}, age = {age}, gender = {gender}")
             
         elif cmd == "0x90":

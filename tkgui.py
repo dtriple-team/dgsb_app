@@ -56,7 +56,7 @@ class TkGUI:
         self.stop_btn = Button(self.frame_connect, text="Measure Stop", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_STOP_MEASURE))
         
         self.get_hr_btn = Button(self.frame_connect, text="GET HR", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_HR))
-        self.get_hr_continue = Button(self.frame_connect, text="GET HR Continue",command=lambda:self.loop.do_ble_write_loop_tasks(protocol.REQ_GET_SPO2, 0.5))
+        self.get_hr_continue = Button(self.frame_connect, text="GET HR Continue",command=lambda:self.loop.do_ble_write_loop_tasks(protocol.REQ_GET_SPO2, 1))
         self.get_spo2_btn = Button(self.frame_connect, text="GET SPO2", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_SPO2))
         self.get_walk_run_step_btn = Button(self.frame_connect, text="GET WALK/RUN_STEP", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_WALK_RUN))
         self.get_motion_flag = Button(self.frame_connect, text="GET MOTION_FLAG", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_MOTION_FLAG))
