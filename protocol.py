@@ -135,30 +135,25 @@ def ble_read_classify_cmd(cmd, data):
 
 def ble_read_parsing(data):
     global read_packet
-    for i in list(data):
-        if not read_packet :
-            if i==2:
-                read_packet.append(i)
-            else :
-                print("[BLE READ] ERROR PACKET")
-                read_packet = []
-        elif len(read_packet) == 1 :
-            if i>=128 and i<=146:
-                read_packet.append(i)
-            else : 
-                print("[BLE READ] ERROR PACKET")
-                read_packet = []
-        elif len(read_packet) == 2 or len(read_packet) == 4:
-            if i == 94:
-                read_packet.append(i)
-            else :
-                print("[BLE READ] ERROR PACKET")
-                read_packet = []
-        else :
+    for i in list(data): # 하나 씩 체크
+        error = False
+        if not read_packet and i==2 : # stx 체크
             read_packet.append(i)
-            if len(read_packet)>=4 and len(read_packet) == read_packet[3]+6:
-                if i==3:
-                    ble_read_classify_cmd(hex(read_packet[1]), read_packet[5:len(read_packet)-1])
-                else:
-                    print("[BLE READ] ERROR PACKET")
-                read_packet = []
+        elif len(read_packet) == 1 and (i>=128 and i<=146) : # cmd 체크
+            read_packet.append(i)
+        elif (len(read_packet) == 2 or len(read_packet) == 4) and i == 94: # 구분자 체크
+            read_packet.append(i)
+        else :
+            read_packet.append(i) # length와 data 담기
+            if len(read_packet)>=4 : # len 이 4보다 큰 경우 
+                if len(read_packet) == read_packet[3]+6 : # 총 length가 read data의 length와 비교
+                    if i == 3: # etx 체크
+                        ble_read_classify_cmd(hex(read_packet[1]), read_packet[5:len(read_packet)-1])
+                        read_packet = []
+                    else: # etx가 아닌 경우 error
+                        error = True
+            else : # stx, cmd, 구분자 오류인 경우 error
+                error = True
+        if error :
+            print("[BLE READ] ERROR PACKET")
+            read_packet = []

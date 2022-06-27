@@ -22,6 +22,7 @@ class BLE:
         self.vital_loop = []
         self.read_packet = []
         self.read_packet_list = []
+      
         self.write_packet_list=[]
 
         if file_test:
@@ -293,7 +294,6 @@ class BLE:
                         if file_test:
                             self.file_write_ble.file_write_time("READ",hex_data)
                         break
-                protocol.ble_read_parsing(r['data'])
                         
         for d in delete_list:
             del self.write_packet_list[d]
