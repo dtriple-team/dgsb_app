@@ -285,7 +285,7 @@ class BLE:
         for r in self.read_packet_list: 
             if r['data'] != bytearray():
                 for wi in range(len(self.write_packet_list)):
-                    if (self.write_packet_list[wi]['address'] == r['address']) and ((r['data'][1] - self.write_packet_list[wi]['data'][1]==64) or r['data'][1] == 128) : # write한 패킷의 응답이 왔는 지 체크
+                    if (self.write_packet_list[wi]['address'] == r['address']) : # write한 패킷의 응답이 왔는 지 체크
                         if wi not in delete_list:
                             delete_list.append(wi)
                         hex_data = print_hex(r['data'])
