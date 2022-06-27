@@ -16,7 +16,6 @@ REQ_GET_ALL_DATA = bytearray([0x02, 0x4f, 0x5E, 0x01, 0x5E, 0x00, 0x03])
 REQ_GET_MAX32630 = bytearray([0x02, 0x50, 0x5E, 0x01, 0x5E, 0x00, 0x03])
 REQ_SET_MAX32630_CMD = 0x11
 
-RESP_ERROR_CMD = "0x80"
 RESP_MEASURE_START_CMD = "0x81"
 RESP_MEASURE_STOP_CMD = "0x82"
 RESP_SPO2_CMD = "0x83"
@@ -42,9 +41,7 @@ def change_signed_type(data, division):
         return data/division
     
 def ble_read_classify_cmd(cmd, data):
-    if cmd == RESP_ERROR_CMD:
-        print("[BLE RESPONSE] WRITE PACKET ERROR!\n")
-    elif cmd == RESP_MEASURE_START_CMD:
+    if cmd == RESP_MEASURE_START_CMD:
         print("[BLE RESPONSE] MEASURE START!\n")
     elif cmd == RESP_MEASURE_STOP_CMD:
         print("[BLE RESPONSE] MEASURE STOP!\n")
