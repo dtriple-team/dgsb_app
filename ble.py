@@ -22,8 +22,6 @@ class BLE:
         self.vital_loop = []
         self.read_packet = []
         self.read_packet_list = []
-        # self.read_packet_list.append({'data':bytearray([0x02, 0x81, 0x5E, 0x01, 0x01 ,0x01, 0x03]), 'address':''})
-        # self.read_packet_list.append({'data':bytearray([0x02, 0x81, 0x5E, 0x01, 0x04, 0x01]), 'address':''})
         self.write_packet_list=[]
 
         if file_test:
