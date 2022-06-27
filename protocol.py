@@ -35,24 +35,13 @@ RESP_ALL_DATA_CMD = "0x8f"
 RESP_MAX32630_CMD = "0x90"
 RESP_ALERTID_ALERTDATA = 145
 
-RESP_CMD = {129:'RESP_MEASURE_START_CMD', 
-130:'RESP_MEASURE_STOP_CMD', 
-131:'RESP_SPO2_CMD', 
-132:'RESP_HR_CMD', 
-133:'RESP_WALK_RUN_CMD',
-134:'RESP_MOTION_FLAG_CMD', 
-135:'RESP_ACTIVITY_CMD',
-136:'RESP_BATT_CMD',
-137:'RESP_SCD_CMD',
-138:'RESP_ACC_CMD',
-139:'RESP_GYRO_CMD',
-140:'RESP_FALL_DETECT_CMD',
-141:'RESP_TEMP_CMD',
-142:'RESP_PRESSURE_CMD',
-143:'RESP_ALL_DATA_CMD',
-144:'RESP_MAX32630_CMD'}
-
-
+read_packet = []
+def change_signed_type(data, division):
+    if data>32768:
+        return (data-0x10000)/division
+    else : 
+        return data
+    
 def ble_read_classify_cmd(cmd, data):
     if cmd == RESP_MEASURE_START_CMD:
         print("[BLE RESPONSE] MEASURE START!")
@@ -91,13 +80,13 @@ def ble_read_classify_cmd(cmd, data):
         acc_x = data[0]<<8 | data[1]
         acc_y = data[2]<<8 | data[3]
         acc_z = data[4]<<8 | data[5]
-        print(f"[BLE RESPONSE] acc_x = {acc_x-0x10000 if acc_x>32768 else acc_x}, acc_y = {acc_y-0x10000 if acc_y>32768 else acc_y}, acc_z = {acc_z-0x10000 if acc_z>32768 else acc_z}")
+        print(f"[BLE RESPONSE] acc_x = {change_signed_type(acc_x, 1000)}, acc_y = {change_signed_type(acc_y, 1000)}, acc_z = {change_signed_type(acc_z, 1000)}")
 
     elif cmd == RESP_GYRO_CMD:
         gyro_x = data[0]<<8 | data[1]
         gyro_y = data[2]<<8 | data[3]
         gyro_z = data[4]<<8 | data[5]
-        print(f"[BLE RESPONSE] gyro_x = {gyro_x-0x10000 if gyro_x>32768 else gyro_x}, gyro_y = {gyro_y-0x10000 if gyro_y>32768 else gyro_y}, gyro_z = {gyro_z-0x10000 if gyro_z>32768 else gyro_z}")
+        print(f"[BLE RESPONSE] gyro_x = {change_signed_type(gyro_x,100)}, gyro_y = {change_signed_type(gyro_y,100)}, gyro_z = {change_signed_type(gyro_z,100)}")
 
     elif cmd == RESP_FALL_DETECT_CMD:
         print(f"[BLE RESPONSE] fall_detect = {data[0]}")
@@ -108,7 +97,7 @@ def ble_read_classify_cmd(cmd, data):
         
     elif cmd == RESP_PRESSURE_CMD:
         pressure = data[0]<<8 | data[1]
-        print(f"[BLE RESPONSE] pressure = {pressure}")
+        print(f"[BLE RESPONSE] pressure = {pressure/100}")
         
     elif cmd == RESP_ALL_DATA_CMD:
         spo2 = data[0]<<8 | data[1]
@@ -142,3 +131,21 @@ def ble_read_classify_cmd(cmd, data):
         age = data[2]
         gender = data[3]
         print(f"[BLE RESPONSE] height = {height}, weight = {weight}, age = {age}, gender = {gender}")
+
+def ble_read_parsing(data):
+    global read_packet
+    for i in list(data):
+        if not read_packet and i==2 :
+            if i==2:
+                read_packet.append(i)
+            else :
+                print("[BLE READ] ERROR PACKET")
+                read_packet = []
+        else :
+            read_packet.append(i)
+            if len(read_packet)>=4 and len(read_packet) == read_packet[3]+6:
+                if i==3:
+                    ble_read_classify_cmd(hex(read_packet[1]), read_packet[5:len(read_packet)-1])
+                else:
+                    print("[BLE READ] ERROR PACKET")
+                read_packet = []

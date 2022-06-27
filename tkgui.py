@@ -22,13 +22,14 @@ class TkGUI:
         self.ble_stop_btn.pack(side="bottom")
         """
         scan frame
+        Left Area : BLE Scan 및 Connect 하는 영역
         """
         self.frame_scan = Frame(self.root)
         self.scan_state_text = StringVar()
         self.scan_state_label = Label(self.frame_scan, font=font.Font(size=10, weight="bold"), textvariable=self.scan_state_text)
         self.scan_btn = Button(self.frame_scan, text="BLE Scan", command=self.loop.do_scan_tasks)
         self.scan_stop_btn = Button(self.frame_scan, text="BLE Scan Stop", command=self.loop.do_scan_stop_tasks)
-        self.connect_btn = Button(self.frame_scan, text="BLE Connect", command=self.loop.do_ble_connect_tasks)
+        self.connect_btn = Button(self.frame_scan, text="BLE Connect", command=lambda:self.loop.do_ble_connect_tasks(self.scanlistbox_return()))
         
         self.title_scan_list = Label(self.frame_scan, text="SCAN LIST",font=font.Font(size=10, weight="bold"))
         self.frame_scan_list = Frame(self.frame_scan)
@@ -47,35 +48,36 @@ class TkGUI:
         self.scanlistbox.pack(expand=True, fill=constants.Y)
         """
         connect frame
+        Right Area : BLE 연결 후 연결해제 및 통신하는 영역
         """
         self.frame_connect = Frame(self.root)
         self.state_text = StringVar()
         self.state_label = Label(self.frame_connect, font=font.Font(size=10, weight="bold"), textvariable=self.state_text)
-        self.disconnect_btn = Button(self.frame_connect, text="BLE Disconnect", command=self.loop.do_ble_disconnect_tasks)
-        self.measure_btn = Button(self.frame_connect, text="Measure Start", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_START_MEASURE))
-        self.stop_btn = Button(self.frame_connect, text="Measure Stop", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_STOP_MEASURE))
+        self.disconnect_btn = Button(self.frame_connect, text="BLE Disconnect", command=lambda:self.loop.do_ble_disconnect_tasks(self.clientlistbox_return()))
+        self.measure_btn = Button(self.frame_connect, text="Measure Start", command=lambda:self.loop.do_ble_write_tasks(self.clientlistbox_return(), protocol.REQ_START_MEASURE))
+        self.stop_btn = Button(self.frame_connect, text="Measure Stop", command=lambda:self.loop.do_ble_write_tasks(self.clientlistbox_return(),protocol.REQ_STOP_MEASURE))
         
-        self.get_hr_btn = Button(self.frame_connect, text="GET HR", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_HR))
-        self.get_hr_continue = Button(self.frame_connect, text="GET HR Continue",command=lambda:self.loop.do_ble_write_loop_tasks(protocol.REQ_GET_SPO2, 1))
-        self.get_spo2_btn = Button(self.frame_connect, text="GET SPO2", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_SPO2))
-        self.get_walk_run_step_btn = Button(self.frame_connect, text="GET WALK/RUN_STEP", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_WALK_RUN))
-        self.get_motion_flag = Button(self.frame_connect, text="GET MOTION_FLAG", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_MOTION_FLAG))
-        self.get_activity = Button(self.frame_connect, text="GET ACTIVITY", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_ACTIVITY))
+        self.get_hr_btn = Button(self.frame_connect, text="GET HR", command=lambda:self.loop.do_ble_write_tasks(self.clientlistbox_return(),protocol.REQ_GET_HR))
+        self.get_hr_continue = Button(self.frame_connect, text="GET HR Continue",command=lambda:self.loop.do_ble_write_loop_tasks(self.clientlistbox_return(),protocol.REQ_GET_HR, 1))
+        self.get_spo2_btn = Button(self.frame_connect, text="GET SPO2", command=lambda:self.loop.do_ble_write_tasks(self.clientlistbox_return(),protocol.REQ_GET_SPO2))
+        self.get_walk_run_step_btn = Button(self.frame_connect, text="GET WALK/RUN_STEP", command=lambda:self.loop.do_ble_write_tasks(self.clientlistbox_return(),protocol.REQ_GET_WALK_RUN))
+        self.get_motion_flag = Button(self.frame_connect, text="GET MOTION_FLAG", command=lambda:self.loop.do_ble_write_tasks(self.clientlistbox_return(),protocol.REQ_GET_MOTION_FLAG))
+        self.get_activity = Button(self.frame_connect, text="GET ACTIVITY", command=lambda:self.loop.do_ble_write_tasks(self.clientlistbox_return(),protocol.REQ_GET_ACTIVITY))
         
         
-        self.get_battery_btn = Button(self.frame_connect, text="GET BATTERY", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_BATT))
-        self.get_scd_btn = Button(self.frame_connect, text="GET SCD", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_SCD))
-        self.get_acc_btn = Button(self.frame_connect, text="GET ACC", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_ACC))
-        self.get_gyro_btn = Button(self.frame_connect, text="GET GYRO", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_GYRO))
+        self.get_battery_btn = Button(self.frame_connect, text="GET BATTERY", command=lambda:self.loop.do_ble_write_tasks(self.clientlistbox_return(),protocol.REQ_GET_BATT))
+        self.get_scd_btn = Button(self.frame_connect, text="GET SCD", command=lambda:self.loop.do_ble_write_tasks(self.clientlistbox_return(),protocol.REQ_GET_SCD))
+        self.get_acc_btn = Button(self.frame_connect, text="GET ACC", command=lambda:self.loop.do_ble_write_tasks(self.clientlistbox_return(),protocol.REQ_GET_ACC))
+        self.get_gyro_btn = Button(self.frame_connect, text="GET GYRO", command=lambda:self.loop.do_ble_write_tasks(self.clientlistbox_return(),protocol.REQ_GET_GYRO))
         
-        self.get_falldetect = Button(self.frame_connect, text="GET FALL_DETECT", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_FALL_DETECT))
-        self.get_temperature = Button(self.frame_connect, text="GET TEMP", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_TEMP))
-        self.get_pressure = Button(self.frame_connect, text="GET PRESSURE", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_PRESSURE))
+        self.get_falldetect = Button(self.frame_connect, text="GET FALL_DETECT", command=lambda:self.loop.do_ble_write_tasks(self.clientlistbox_return(),protocol.REQ_GET_FALL_DETECT))
+        self.get_temperature = Button(self.frame_connect, text="GET TEMP", command=lambda:self.loop.do_ble_write_tasks(self.clientlistbox_return(),protocol.REQ_GET_TEMP))
+        self.get_pressure = Button(self.frame_connect, text="GET PRESSURE", command=lambda:self.loop.do_ble_write_tasks(self.clientlistbox_return(),protocol.REQ_GET_PRESSURE))
 
-        self.get_all_btn = Button(self.frame_connect, text="GET ALL", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_ALL_DATA))
-        self.get_max32630_btn = Button(self.frame_connect, text="GET MAX32630", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_GET_MAX32630))
-        self.random_btn = Button(self.frame_connect, text="Random Data", command=self.loop.do_ble_write_random_loop_tasks)
-        self.get_all_continue = Button(self.frame_connect, text="GET ALL Continue",command=lambda:self.loop.do_ble_write_loop_tasks(protocol.REQ_GET_ALL_DATA, 1))
+        self.get_all_btn = Button(self.frame_connect, text="GET ALL", command=lambda:self.loop.do_ble_write_tasks(self.clientlistbox_return(),protocol.REQ_GET_ALL_DATA))
+        self.get_max32630_btn = Button(self.frame_connect, text="GET MAX32630", command=lambda:self.loop.do_ble_write_tasks(self.clientlistbox_return(),protocol.REQ_GET_MAX32630))
+        self.random_btn = Button(self.frame_connect, text="Random Data", command=lambda:self.loop.do_ble_write_random_loop_tasks(self.clientlistbox_return()))
+        self.get_all_continue = Button(self.frame_connect, text="GET ALL Continue",command=lambda:self.loop.do_ble_write_loop_tasks(self.clientlistbox_return(), protocol.REQ_GET_ALL_DATA, 1))
         self.read_text = StringVar()
         self.read_text.set("READ DATA : ")
         self.write_text = StringVar()
@@ -123,8 +125,6 @@ class TkGUI:
         self.get_max32630_btn.grid(row=6, column=2, sticky=constants.W)
         self.random_btn.grid(row=7, column=0, sticky=constants.W)
         self.get_all_continue.grid(row=7, column=1, sticky=constants.W)
-        # self.write_label.grid(row=6, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
-        # self.read_label.grid(row=7, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
         self.title_connected_device_list.grid(row=8, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
         self.client_frame.grid(row=9, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S)
         self.client_scrollbar.pack(side=constants.RIGHT, fill=constants.Y)
@@ -204,18 +204,14 @@ class TkGUI:
     def scanlistbox_init(self):
         self.scanlistbox.delete(0, constants.END)
 
-    def devicelist_insert(self, num, info):
+    def scanlist_insert(self, num, info):
         self.scanlistbox.insert(num, info)
 
     def scanlistbox_return(self):
         for i in self.scanlistbox.curselection():
             return self.scanlistbox.get(i)
+        print("[NOTIFICATION] Please select ble device !")
         return None
-
-    def scanlistbox_selete_delete(self):
-        for i in self.scanlistbox.curselection():
-            self.scanlistbox.delete(i)
-            break
 
     def clientlistbox_insert(self, num, info):
         self.client_listbox.insert(num, info)
@@ -223,14 +219,9 @@ class TkGUI:
     def clientlistbox_return(self):
         for i in self.client_listbox.curselection():
             return self.client_listbox.get(i)
+        print("[NOTIFICATION] Please select ble device !")
         return None
 
-    def clientlistbox_index_return(self):
-        for i in self.client_listbox.curselection():
-            return i
-    def clientlistbox_selete_delete(self):
-        self.client_listbox.delete(self.clientlistbox_index_return())
-        
     def clientlistbox_index_delete(self, index):
         self.client_listbox.delete(index)
 
@@ -239,8 +230,6 @@ class TkGUI:
             if address in self.client_listbox.get(i):
                 self.clientlistbox_index_delete(i)
                 break
-    def clientlistbox_all_delete(self):
-        self.client_listbox.delete(0, constants.END)
     """
     button function
     """  
