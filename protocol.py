@@ -1,5 +1,4 @@
 REQ_START_MEASURE = bytearray([0x02, 0x41, 0x5E, 0x01, 0x5E, 0x00, 0x03])
-# REQ_START_MEASURE = bytearray([0x02, 0x41, 0x01, 0x01, 0x03])
 REQ_STOP_MEASURE = bytearray([0x02, 0x42, 0x5E, 0x01, 0x5E, 0x00, 0x03])
 REQ_GET_SPO2 = bytearray([0x02, 0x43, 0x5E, 0x01, 0x5E, 0x00, 0x03])
 REQ_GET_HR = bytearray([0x02, 0x44, 0x5E, 0x01, 0x5E, 0x00, 0x03])
@@ -44,60 +43,60 @@ def change_signed_type(data, division):
     
 def ble_read_classify_cmd(cmd, data):
     if cmd == RESP_MEASURE_START_CMD:
-        print("[BLE RESPONSE] MEASURE START!")
+        print("[BLE RESPONSE] MEASURE START!\n")
     elif cmd == RESP_MEASURE_STOP_CMD:
-        print("[BLE RESPONSE] MEASURE STOP!")
+        print("[BLE RESPONSE] MEASURE STOP!\n")
     elif cmd == RESP_SPO2_CMD:
         spo2 = data[0]<<8 | data[1]
         spo2_confidence = data[2]
-        print(f"[BLE RESPONSE] spo2 = {spo2}, spo2_confidence = {spo2_confidence}")
+        print(f"[BLE RESPONSE] spo2 = {spo2}, spo2_confidence = {spo2_confidence}\n")
 
     elif cmd == RESP_HR_CMD:
         hr = data[0]<<8 | data[1]
         hr_confidence = data[2]
-        print(f"[BLE RESPONSE] hr = {hr}, hr_confidence = {hr_confidence}")
+        print(f"[BLE RESPONSE] hr = {hr}, hr_confidence = {hr_confidence}\n")
 
     elif cmd == RESP_WALK_RUN_CMD:
         walk = data[0]<<24 | data[1]<<16 | data[2]<<8 | data[3]
         run = data[4]<<24 | data[5]<<16 | data[6]<<8 | data[7]
-        print(f"[BLE RESPONSE] walk step = {walk}, run step = {run}")
+        print(f"[BLE RESPONSE] walk step = {walk}, run step = {run}\n")
 
     elif cmd == RESP_MOTION_FLAG_CMD:
         motion_flag = data[0]
-        print(f"[BLE RESPONSE] motion_flag = {motion_flag}")
+        print(f"[BLE RESPONSE] motion_flag = {motion_flag}\n")
 
     elif cmd == RESP_ACTIVITY_CMD:
-        print(f"[BLE RESPONSE] activity = {data[0]}")
+        print(f"[BLE RESPONSE] activity = {data[0]}\n")
 
     elif cmd == RESP_BATT_CMD:
-        print(f"[BLE RESPONSE] battery = {data[0]}")
+        print(f"[BLE RESPONSE] battery = {data[0]}\n")
 
     elif cmd == RESP_SCD_CMD:
         scd = data[0]
-        print(f"[BLE RESPONSE] scd = {scd}")
+        print(f"[BLE RESPONSE] scd = {scd}\n")
 
     elif cmd == RESP_ACC_CMD:
         acc_x = data[0]<<8 | data[1]
         acc_y = data[2]<<8 | data[3]
         acc_z = data[4]<<8 | data[5]
-        print(f"[BLE RESPONSE] acc_x = {change_signed_type(acc_x, 1000)}, acc_y = {change_signed_type(acc_y, 1000)}, acc_z = {change_signed_type(acc_z, 1000)}")
+        print(f"[BLE RESPONSE] acc_x = {change_signed_type(acc_x, 1000)}, acc_y = {change_signed_type(acc_y, 1000)}, acc_z = {change_signed_type(acc_z, 1000)}\n")
 
     elif cmd == RESP_GYRO_CMD:
         gyro_x = data[0]<<8 | data[1]
         gyro_y = data[2]<<8 | data[3]
         gyro_z = data[4]<<8 | data[5]
-        print(f"[BLE RESPONSE] gyro_x = {change_signed_type(gyro_x,100)}, gyro_y = {change_signed_type(gyro_y,100)}, gyro_z = {change_signed_type(gyro_z,100)}")
+        print(f"[BLE RESPONSE] gyro_x = {change_signed_type(gyro_x,100)}, gyro_y = {change_signed_type(gyro_y,100)}, gyro_z = {change_signed_type(gyro_z,100)}\n")
 
     elif cmd == RESP_FALL_DETECT_CMD:
-        print(f"[BLE RESPONSE] fall_detect = {data[0]}")
+        print(f"[BLE RESPONSE] fall_detect = {data[0]}\n")
         
     elif cmd == RESP_TEMP_CMD:
         temp = data[0]<<8 | data[1]
-        print(f"[BLE RESPONSE] temp = {temp/100}")
+        print(f"[BLE RESPONSE] temp = {temp/100}\n")
         
     elif cmd == RESP_PRESSURE_CMD:
         pressure = data[0]<<8 | data[1]
-        print(f"[BLE RESPONSE] pressure = {pressure/100}")
+        print(f"[BLE RESPONSE] pressure = {pressure/100}\n")
         
     elif cmd == RESP_ALL_DATA_CMD:
         spo2 = data[0]<<8 | data[1]
@@ -123,14 +122,14 @@ def ble_read_classify_cmd(cmd, data):
         weight = data[36]
         age = data[37]
         gender = data[38]
-        print(f"[BLE RESPONSE] spo2 = {spo2}, spo2_confidence = {spo2_confidence} \n hr = {hr}, hr_confidence = {hr_confidence} \n walk step = {walk}, run step = {run} \n motion_flag = {motion_flag} \n activity = {activity} \n battery = {battery} \n scd = {scd} \n acc_x = {acc_x-0x10000 if acc_x>32768 else acc_x}, acc_y = {acc_y-0x10000 if acc_y>32768 else acc_y}, acc_z = {acc_z-0x10000 if acc_z>32768 else acc_z} \n gyro_x = {gyro_x-0x10000 if gyro_x>32768 else gyro_x}, gyro_y = {gyro_y-0x10000 if gyro_y>32768 else gyro_y}, gyro_z = {gyro_z-0x10000 if gyro_z>32768 else gyro_z} \n fall_detect = {fall_detect} \n temp = {temp/100} \n pressure = {pressure} \n height = {height}, weight = {weight}, age = {age}, gender = {gender}")
+        print(f"[BLE RESPONSE] spo2 = {spo2}, spo2_confidence = {spo2_confidence} \n hr = {hr}, hr_confidence = {hr_confidence} \n walk step = {walk}, run step = {run} \n motion_flag = {motion_flag} \n activity = {activity} \n battery = {battery} \n scd = {scd} \n acc_x = {change_signed_type(acc_x,1000)}, acc_y = {change_signed_type(acc_y,1000)}, acc_z = {change_signed_type(acc_z,1000)} \n gyro_x = {change_signed_type(gyro_x,100)}, gyro_y = {change_signed_type(gyro_y,100)}, gyro_z = {change_signed_type(gyro_z,100)} \n fall_detect = {fall_detect} \n temp = {temp/100} \n pressure = {pressure/100} \n height = {height}, weight = {weight}, age = {age}, gender = {gender}\n")
             
     elif cmd == RESP_MAX32630_CMD:
         height = data[0]
         weight = data[1]
         age = data[2]
         gender = data[3]
-        print(f"[BLE RESPONSE] height = {height}, weight = {weight}, age = {age}, gender = {gender}")
+        print(f"[BLE RESPONSE] height = {height}, weight = {weight}, age = {age}, gender = {gender}\n")
 
 def ble_read_parsing(data):
     global read_packet

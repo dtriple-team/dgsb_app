@@ -2,7 +2,7 @@ import asyncio, threading, file, protocol
 from bleak import BleakClient, BleakScanner
 from ble_print import print_hex
 from datetime import datetime
-file_test = False # True-> write, read 데이터를 file로 확인할 수 있음
+file_test = False # True-> write, read packet을 file로 확인할 수 있음
 read_write_charcteristic_uuid = "f0001111-0451-4000-b000-000000000000"
 class BLE:
     def __init__(self):
@@ -41,7 +41,7 @@ class BLE:
         print("[NOTIFICATION] Disconnected Device !")
         return -1
 
-    def check_same_data(self, list, data):
+    def check_same_client(self, list, data):
         for l in list:
             if l.address == data:
                 return True
@@ -145,7 +145,7 @@ class BLE:
         if address:
             index = self.get_index_select_client(address.split(' ')[1])
             if index >= 0 :
-                if self.connected_client_list[index].address in self.vital_loop: # 현재 while문으로 write하는 상태라면 while stop
+                if self.connected_client_list[index].address in self.vital_loop: # 현재 while문으로 write loop가 돌고 있다면 while stop
                     self.vital_loop.remove(self.connected_client_list[index].address)
                 self.loop.create_task(self.ble_write_check(self.connected_client_list[index], packet))
 
@@ -153,7 +153,7 @@ class BLE:
         if address:
             index = self.get_index_select_client(address.split(' ')[1])
             if index >= 0 :
-                if self.connected_client_list[index].address in self.vital_loop: # 현재 while문으로 write하는 상태라면 while stop
+                if self.connected_client_list[index].address in self.vital_loop: # 현재 while문으로 write loop가 돌고 있다면 while stop
                     self.vital_loop.remove(self.connected_client_list[index].address)
                 else:
                     self.vital_loop.append(self.connected_client_list[index].address) # while문이 돌고 있지 않은 상태라면 while start
@@ -206,30 +206,32 @@ class BLE:
     # Asynchronous Ble Connect Function
     async def ble_connect(self, client_info):
         self.root.state_label_set(f"Connecting.. {client_info.split(' ')[1]}")
-        if not self.check_same_data(self.connected_client_list, client_info.split(' ')[1]):
+        if not self.check_same_client(self.connected_client_list, client_info.split(' ')[1]): # 현재 연결돼있는지 체크
             client = BleakClient(client_info.split(' ')[1])
             try:
                 client.set_disconnected_callback(self.ble_disconnect_callback)
                 await client.connect()
                 print("[BLE] Connect Success!")
                 await asyncio.sleep(1)
-                self.connected_client_list.append(client)
+                self.connected_client_list.append(client) # 연결된 client 는 list에 추가
                 self.root.clientlistbox_insert(len(self.connected_client_list)-1, client_info)
                 self.root.state_label_set(f"Connected {client.address}")
                 await asyncio.sleep(1) 
-                await self.ble_read_thread(client)
+                await self.ble_read_thread(client) # client 가 연결되고 나면 read를 체크하는 thread 실행
             except Exception as e:
                 print('[ERR] : ', e)
         else:
             print("[BLE] Already connected")
-  
-    async def ble_disconnect(self, address):
+    
+    # Ble Disconnect
+    async def ble_disconnect(self, address): 
         for i in range(len(self.connected_client_list)) :
             if self.connected_client_list[i].address == address.split(' ')[1]:
                 await self.connected_client_list[i].disconnect()
                 await asyncio.sleep(1)
                 break
 
+    # All Connected Client Disconnect
     async def ble_all_disconnect(self):
         temp_list = self.connected_client_list.copy()
         for i in range(len(temp_list)) :
@@ -237,7 +239,7 @@ class BLE:
             await temp_list[i].disconnect()
             await asyncio.sleep(1)
             
-        
+    # Ble Write 
     async def ble_write(self, client, data):
         for w in self.write_packet_list: # write한 패킷의 응답이 없을 경우, write 할 수 없음.
             if w['address']==client.address:
@@ -252,7 +254,8 @@ class BLE:
             'datetime':datetime.now()})
         await client.write_gatt_char(read_write_charcteristic_uuid,  data) # band로 write 함.
 
-    async def ble_write_check(self, client, data): # write packet의 길이를 체크 하여 20 byte씩 쪼개서 보내도록 함.
+    # write packet의 길이를 체크 하여 20 byte씩 쪼개서 보내도록 함.
+    async def ble_write_check(self, client, data): 
         if len(data)>=21:
 
             await self.ble_write(client, data[0:20])
@@ -260,6 +263,7 @@ class BLE:
         else:
             await self.ble_write(client, data)
 
+    # 설정한 시간 초 마다 write loop가 도는 함수
     async def ble_write_loop(self, client, data, time):
         try:
             while  client.address in self.vital_loop:
@@ -280,18 +284,20 @@ class BLE:
                 i+=1
         except:
             pass
-
-    async def ble_read(self, client): # read_packet_list에 추가시킴.
-        self.read_packet_list.append(
+    # Ble Read
+    async def ble_read(self, client):
+        self.read_packet_list.append(  # read_packet_list에 read된 데이터 추가.
             {'address':client.address,
             'data':await client.read_gatt_char(read_write_charcteristic_uuid)})
 
-    async def ble_read_thread(self, client): # connect 시작 후 0.1초마다 read 함. 
+    # connect 시작 후 0.1초마다 read 함. 
+    async def ble_read_thread(self, client): 
         while client.is_connected:
             await self.ble_read(client)
             await asyncio.sleep(0.1)
 
-    async def ble_read_packet_list_thread(self): # read_packet_list를 체크 하는 thread 
+    # read_packet_list를 체크 하는 thread 
+    async def ble_read_packet_list_thread(self): 
         await asyncio.sleep(0.01)
         delete_list=[]
         for wi in range(len(self.write_packet_list)): # 5초 이내로 응답 없을 경우, time out으로 처리.
@@ -304,9 +310,9 @@ class BLE:
                     if (self.write_packet_list[wi]['address'] == r['address']) and (r['data'][1] - self.write_packet_list[wi]['data'][1]==64) : # write한 패킷의 응답이 왔는 지 체크
                         if wi not in delete_list:
                             delete_list.append(wi)
-                        protocol.ble_read_parsing(r['data'])
                         hex_data = print_hex(r['data'])
                         print(f"[BLE READ] {r['address']} : {hex_data}")
+                        protocol.ble_read_parsing(r['data'])
                         if file_test:
                             self.file_write_ble.file_write_time("READ",hex_data)
                         break
