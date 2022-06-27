@@ -58,7 +58,6 @@ class TkGUI:
         self.stop_btn = Button(self.frame_connect, text="Measure Stop", command=lambda:self.loop.do_ble_write_tasks(self.clientlistbox_return(),protocol.REQ_STOP_MEASURE))
         
         self.get_hr_btn = Button(self.frame_connect, text="GET HR", command=lambda:self.loop.do_ble_write_tasks(self.clientlistbox_return(),protocol.REQ_GET_HR))
-        self.get_hr_continue = Button(self.frame_connect, text="GET HR Continue",command=lambda:self.loop.do_ble_write_loop_tasks(self.clientlistbox_return(),protocol.REQ_GET_HR, 1))
         self.get_spo2_btn = Button(self.frame_connect, text="GET SPO2", command=lambda:self.loop.do_ble_write_tasks(self.clientlistbox_return(),protocol.REQ_GET_SPO2))
         self.get_walk_run_step_btn = Button(self.frame_connect, text="GET WALK/RUN_STEP", command=lambda:self.loop.do_ble_write_tasks(self.clientlistbox_return(),protocol.REQ_GET_WALK_RUN))
         self.get_motion_flag = Button(self.frame_connect, text="GET MOTION_FLAG", command=lambda:self.loop.do_ble_write_tasks(self.clientlistbox_return(),protocol.REQ_GET_MOTION_FLAG))
@@ -76,7 +75,6 @@ class TkGUI:
 
         self.get_all_btn = Button(self.frame_connect, text="GET ALL", command=lambda:self.loop.do_ble_write_tasks(self.clientlistbox_return(),protocol.REQ_GET_ALL_DATA))
         self.get_max32630_btn = Button(self.frame_connect, text="GET MAX32630", command=lambda:self.loop.do_ble_write_tasks(self.clientlistbox_return(),protocol.REQ_GET_MAX32630))
-        self.random_btn = Button(self.frame_connect, text="Random Data", command=lambda:self.loop.do_ble_write_random_loop_tasks(self.clientlistbox_return()))
         self.get_all_continue = Button(self.frame_connect, text="GET ALL Continue",command=lambda:self.loop.do_ble_write_loop_tasks(self.clientlistbox_return(), protocol.REQ_GET_ALL_DATA, 1))
         self.read_text = StringVar()
         self.read_text.set("READ DATA : ")
@@ -93,7 +91,7 @@ class TkGUI:
 
         self.label=Label(self.frame_connect, text="Packet Input ex) 0x02 0x01 0x01 0x01 0x03")
         self.input_text=Text(self.frame_connect, height=5)
-        self.submit_btn = Button(self.frame_connect, text="Submit", command=self.submit_button)
+        self.submit_btn = Button(self.frame_connect, text="Submit", command=lambda:self.submit_button(self.clientlistbox_return())) # 입력한 packet을 write 함.
         """
         connect frame show
         """
@@ -104,35 +102,33 @@ class TkGUI:
         self.stop_btn.grid(row=1, column=2, sticky=constants.W)
         
         self.get_hr_btn.grid(row=2, column=0, sticky=constants.W)
-        self.get_hr_continue.grid(row=2, column=1, sticky=constants.W)
-        self.get_spo2_btn.grid(row=2, column=2, sticky=constants.W)
-        self.get_walk_run_step_btn.grid(row=3, column=0, sticky=constants.W)
+        self.get_spo2_btn.grid(row=2, column=1, sticky=constants.W)
+        self.get_walk_run_step_btn.grid(row=2, column=2, sticky=constants.W)
         
-        self.get_motion_flag.grid(row=3, column=1, sticky=constants.W)
+        self.get_motion_flag.grid(row=3, column=0, sticky=constants.W)
         
-        self.get_activity.grid(row=3, column=2, sticky=constants.W)
-        self.get_battery_btn.grid(row=4, column=0, sticky=constants.W)
-        self.get_scd_btn.grid(row=4, column=1, sticky=constants.W)
-        self.get_acc_btn.grid(row=4, column=2, sticky=constants.W)
-        self.get_gyro_btn.grid(row=5, column=0, sticky=constants.W)
-        self.get_falldetect.grid(row=5, column=1, sticky=constants.W)
-        self.get_temperature.grid(row=5, column=2, sticky=constants.W)
-        self.get_pressure.grid(row=6, column=0, sticky=constants.W)
+        self.get_activity.grid(row=3, column=1, sticky=constants.W)
+        self.get_battery_btn.grid(row=3, column=2, sticky=constants.W)
+        self.get_scd_btn.grid(row=4, column=0, sticky=constants.W)
+        self.get_acc_btn.grid(row=4, column=1, sticky=constants.W)
+        self.get_gyro_btn.grid(row=4, column=2, sticky=constants.W)
+        self.get_falldetect.grid(row=5, column=0, sticky=constants.W)
+        self.get_temperature.grid(row=5, column=1, sticky=constants.W)
+        self.get_pressure.grid(row=5, column=2, sticky=constants.W)
 
-        self.get_all_btn.grid(row=6, column=1, sticky=constants.W)
+        self.get_all_btn.grid(row=6, column=0, sticky=constants.W)
 
         
-        self.get_max32630_btn.grid(row=6, column=2, sticky=constants.W)
-        self.random_btn.grid(row=7, column=0, sticky=constants.W)
-        self.get_all_continue.grid(row=7, column=1, sticky=constants.W)
-        self.title_connected_device_list.grid(row=8, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
-        self.client_frame.grid(row=9, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S)
+        self.get_max32630_btn.grid(row=6, column=1, sticky=constants.W)
+        self.get_all_continue.grid(row=6, column=2, sticky=constants.W)
+        self.title_connected_device_list.grid(row=7, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
+        self.client_frame.grid(row=8, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S)
         self.client_scrollbar.pack(side=constants.RIGHT, fill=constants.Y)
         self.client_listbox.pack(expand=True, fill=constants.Y)
         
-        self.label.grid(row=10, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S)
-        self.input_text.grid(row=11, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S)
-        self.submit_btn.grid(row=12, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S)
+        self.label.grid(row=9, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S)
+        self.input_text.grid(row=10, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S)
+        self.submit_btn.grid(row=11, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S)
         self.loop.root_connect(self)
         self.change_ui(False)
 
@@ -233,13 +229,13 @@ class TkGUI:
     """
     button function
     """  
-    def submit_button(self):
+    def submit_button(self, address):
         input_text = self.input_text.get(1.0, constants.END+"-1c")
         if len(input_text) != 0:
             input_text = input_text.split(" ")
             submit_packet = []
             for i in input_text:
                 submit_packet.append(int(i, 16))
-            self.loop.do_ble_write_tasks(bytearray(submit_packet))
+            self.loop.do_ble_write_tasks( address, bytearray(submit_packet))
 
 

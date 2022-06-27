@@ -16,6 +16,7 @@ REQ_GET_ALL_DATA = bytearray([0x02, 0x4f, 0x5E, 0x01, 0x5E, 0x00, 0x03])
 REQ_GET_MAX32630 = bytearray([0x02, 0x50, 0x5E, 0x01, 0x5E, 0x00, 0x03])
 REQ_SET_MAX32630_CMD = 0x11
 
+RESP_ERROR_CMD = "0x80"
 RESP_MEASURE_START_CMD = "0x81"
 RESP_MEASURE_STOP_CMD = "0x82"
 RESP_SPO2_CMD = "0x83"
@@ -32,17 +33,18 @@ RESP_TEMP_CMD = "0x8d"
 RESP_PRESSURE_CMD = "0x8e"
 RESP_ALL_DATA_CMD = "0x8f"
 RESP_MAX32630_CMD = "0x90"
-RESP_ALERTID_ALERTDATA = 145
 
 read_packet = []
 def change_signed_type(data, division):
     if data>32768:
         return (data-0x10000)/division
     else : 
-        return data
+        return data/division
     
 def ble_read_classify_cmd(cmd, data):
-    if cmd == RESP_MEASURE_START_CMD:
+    if cmd == RESP_ERROR_CMD:
+        print("[BLE RESPONSE] WRITE PACKET ERROR!\n")
+    elif cmd == RESP_MEASURE_START_CMD:
         print("[BLE RESPONSE] MEASURE START!\n")
     elif cmd == RESP_MEASURE_STOP_CMD:
         print("[BLE RESPONSE] MEASURE STOP!\n")
@@ -134,8 +136,20 @@ def ble_read_classify_cmd(cmd, data):
 def ble_read_parsing(data):
     global read_packet
     for i in list(data):
-        if not read_packet and i==2 :
+        if not read_packet :
             if i==2:
+                read_packet.append(i)
+            else :
+                print("[BLE READ] ERROR PACKET")
+                read_packet = []
+        elif len(read_packet) == 1 :
+            if i>=128 and i<=146:
+                read_packet.append(i)
+            else : 
+                print("[BLE READ] ERROR PACKET")
+                read_packet = []
+        elif len(read_packet) == 2 or len(read_packet) == 4:
+            if i == 94:
                 read_packet.append(i)
             else :
                 print("[BLE READ] ERROR PACKET")

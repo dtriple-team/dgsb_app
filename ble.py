@@ -1,4 +1,5 @@
 import asyncio, threading, file, protocol
+
 from bleak import BleakClient, BleakScanner
 from ble_print import print_hex
 from datetime import datetime
@@ -108,9 +109,6 @@ class BLE:
     def do_ble_write_loop_tasks(self, address, packet, time):
         print("[BTN EVENT] BLE WRITE")
         threading.Thread(target=self.asyncio_ble_write_loop_thread, args=(address, packet,time,)).start()
-    def do_ble_write_random_loop_tasks(self, address):
-        print("[BTN EVENT] BLE WRITE")
-        threading.Thread(target=self.asyncio_ble_write_random_loop_thread, args=(address,)).start()
     """
     asyncio thread function
     """  
@@ -159,15 +157,6 @@ class BLE:
                     self.vital_loop.append(self.connected_client_list[index].address) # while문이 돌고 있지 않은 상태라면 while start
                     self.loop.create_task(self.ble_write_loop(self.connected_client_list[index], packet, time))
 
-    def asyncio_ble_write_random_loop_thread(self, address):
-        if address:
-            index = self.get_index_select_client(address.split(' ')[1])
-            if index >= 0 :
-                if self.connected_client_list[index].address in self.vital_loop:
-                    self.vital_loop.remove(self.connected_client_list[index].address)
-                else:
-                    self.vital_loop.append(self.connected_client_list[index].address)
-                    self.loop.create_task(self.ble_write_random_loop(self.connected_client_list[index]))
     # Asynchronous Ble Program Start
     async def asyncio_start(self):
         if not self.is_running: 
@@ -272,18 +261,6 @@ class BLE:
         except:
             pass
 
-    async def ble_write_random_loop(self, client):
-        try:
-            data = [protocol.REQ_GET_SPO2, protocol.REQ_GET_HR, protocol.REQ_GET_WALK_RUN, protocol.REQ_GET_MOTION_FLAG, protocol.REQ_GET_ACTIVITY, protocol.REQ_GET_BATT, protocol.REQ_GET_SCD, protocol.REQ_GET_ACC, protocol.REQ_GET_ALL_DATA]
-            i = 0
-            while client.address in self.vital_loop:
-                if i>=len(data): 
-                    i=0
-                await self.ble_write_check(client, data[i])
-                await asyncio.sleep(0.3)
-                i+=1
-        except:
-            pass
     # Ble Read
     async def ble_read(self, client):
         self.read_packet_list.append(  # read_packet_list에 read된 데이터 추가.
@@ -307,7 +284,7 @@ class BLE:
         for r in self.read_packet_list: 
             if r['data'] != bytearray():
                 for wi in range(len(self.write_packet_list)):
-                    if (self.write_packet_list[wi]['address'] == r['address']) and (r['data'][1] - self.write_packet_list[wi]['data'][1]==64) : # write한 패킷의 응답이 왔는 지 체크
+                    if (self.write_packet_list[wi]['address'] == r['address']) and ((r['data'][1] - self.write_packet_list[wi]['data'][1]==64) or r['data'][1] == 128) : # write한 패킷의 응답이 왔는 지 체크
                         if wi not in delete_list:
                             delete_list.append(wi)
                         hex_data = print_hex(r['data'])
@@ -316,6 +293,8 @@ class BLE:
                         if file_test:
                             self.file_write_ble.file_write_time("READ",hex_data)
                         break
+                protocol.ble_read_parsing(r['data'])
+                        
         for d in delete_list:
             del self.write_packet_list[d]
         self.read_packet_list.clear() 
