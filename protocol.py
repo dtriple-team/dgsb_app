@@ -17,22 +17,22 @@ REQ_GET_ALL_DATA = bytearray([0x02, 0x4f, 0x5E, 0x01, 0x5E, 0x00, 0x03])
 REQ_GET_MAX32630 = bytearray([0x02, 0x50, 0x5E, 0x01, 0x5E, 0x00, 0x03])
 REQ_SET_MAX32630_CMD = 0x11
 
-RESP_MEASURE_START_CMD = 129
-RESP_MEASURE_STOP_CMD = 130
-RESP_SPO2_CMD = 131
-RESP_HR_CMD = 132
-RESP_WALK_RUN_CMD = 133
-RESP_MOTION_FLAG_CMD = 134
-RESP_ACTIVITY_CMD = 135
-RESP_BATT_CMD = 136
-RESP_SCD_CMD = 137
-RESP_ACC_CMD = 138
-RESP_GYRO_CMD = 139
-RESP_FALL_DETECT_CMD = 140
-RESP_TEMP_CMD = 141
-RESP_PRESSURE_CMD = 142
-RESP_ALL_DATA_CMD = 143
-RESP_MAX32630_CMD = 144
+RESP_MEASURE_START_CMD = "0x81"
+RESP_MEASURE_STOP_CMD = "0x82"
+RESP_SPO2_CMD = "0x83"
+RESP_HR_CMD = "0x84"
+RESP_WALK_RUN_CMD = "0x85"
+RESP_MOTION_FLAG_CMD = "0x86"
+RESP_ACTIVITY_CMD = "0x87"
+RESP_BATT_CMD = "0x88"
+RESP_SCD_CMD = "0x89"
+RESP_ACC_CMD = "0x8a"
+RESP_GYRO_CMD = "0x8b"
+RESP_FALL_DETECT_CMD = "0x8c"
+RESP_TEMP_CMD = "0x8d"
+RESP_PRESSURE_CMD = "0x8e"
+RESP_ALL_DATA_CMD = "0x8f"
+RESP_MAX32630_CMD = "0x90"
 RESP_ALERTID_ALERTDATA = 145
 
 RESP_CMD = {129:'RESP_MEASURE_START_CMD', 
@@ -51,3 +51,94 @@ RESP_CMD = {129:'RESP_MEASURE_START_CMD',
 142:'RESP_PRESSURE_CMD',
 143:'RESP_ALL_DATA_CMD',
 144:'RESP_MAX32630_CMD'}
+
+
+def ble_read_classify_cmd(cmd, data):
+    if cmd == RESP_MEASURE_START_CMD:
+        print("[BLE RESPONSE] MEASURE START!")
+    elif cmd == RESP_MEASURE_STOP_CMD:
+        print("[BLE RESPONSE] MEASURE STOP!")
+    elif cmd == RESP_SPO2_CMD:
+        spo2 = data[0]<<8 | data[1]
+        spo2_confidence = data[2]
+        print(f"[BLE RESPONSE] spo2 = {spo2}, spo2_confidence = {spo2_confidence}")
+
+    elif cmd == RESP_HR_CMD:
+        hr = data[0]<<8 | data[1]
+        hr_confidence = data[2]
+        print(f"[BLE RESPONSE] hr = {hr}, hr_confidence = {hr_confidence}")
+
+    elif cmd == RESP_WALK_RUN_CMD:
+        walk = data[0]<<24 | data[1]<<16 | data[2]<<8 | data[3]
+        run = data[4]<<24 | data[5]<<16 | data[6]<<8 | data[7]
+        print(f"[BLE RESPONSE] walk step = {walk}, run step = {run}")
+
+    elif cmd == RESP_MOTION_FLAG_CMD:
+        motion_flag = data[0]
+        print(f"[BLE RESPONSE] motion_flag = {motion_flag}")
+
+    elif cmd == RESP_ACTIVITY_CMD:
+        print(f"[BLE RESPONSE] activity = {data[0]}")
+
+    elif cmd == RESP_BATT_CMD:
+        print(f"[BLE RESPONSE] battery = {data[0]}")
+
+    elif cmd == RESP_SCD_CMD:
+        scd = data[0]
+        print(f"[BLE RESPONSE] scd = {scd}")
+
+    elif cmd == RESP_ACC_CMD:
+        acc_x = data[0]<<8 | data[1]
+        acc_y = data[2]<<8 | data[3]
+        acc_z = data[4]<<8 | data[5]
+        print(f"[BLE RESPONSE] acc_x = {acc_x-0x10000 if acc_x>32768 else acc_x}, acc_y = {acc_y-0x10000 if acc_y>32768 else acc_y}, acc_z = {acc_z-0x10000 if acc_z>32768 else acc_z}")
+
+    elif cmd == RESP_GYRO_CMD:
+        gyro_x = data[0]<<8 | data[1]
+        gyro_y = data[2]<<8 | data[3]
+        gyro_z = data[4]<<8 | data[5]
+        print(f"[BLE RESPONSE] gyro_x = {gyro_x-0x10000 if gyro_x>32768 else gyro_x}, gyro_y = {gyro_y-0x10000 if gyro_y>32768 else gyro_y}, gyro_z = {gyro_z-0x10000 if gyro_z>32768 else gyro_z}")
+
+    elif cmd == RESP_FALL_DETECT_CMD:
+        print(f"[BLE RESPONSE] fall_detect = {data[0]}")
+        
+    elif cmd == RESP_TEMP_CMD:
+        temp = data[0]<<8 | data[1]
+        print(f"[BLE RESPONSE] temp = {temp/100}")
+        
+    elif cmd == RESP_PRESSURE_CMD:
+        pressure = data[0]<<8 | data[1]
+        print(f"[BLE RESPONSE] pressure = {pressure}")
+        
+    elif cmd == RESP_ALL_DATA_CMD:
+        spo2 = data[0]<<8 | data[1]
+        spo2_confidence = data[2]
+        hr = data[3]<<8 | data[4]
+        hr_confidence = data[5]
+        walk = data[6]<<24 | data[7]<<16 | data[8]<<8 | data[9]
+        run = data[10]<<24 | data[11]<<16 | data[12]<<8 | data[13]
+        motion_flag = data[14]
+        activity = data[15]
+        battery = data[16]
+        scd = data[17]
+        acc_x = data[18]<<8 | data[19]
+        acc_y = data[20]<<8 | data[21]
+        acc_z = data[22]<<8 | data[23]
+        gyro_x = data[24]<<8 | data[25]
+        gyro_y = data[26]<<8 | data[27]
+        gyro_z = data[28]<<8 | data[29]
+        fall_detect = data[30]
+        temp = data[31]<<8 | data[32]
+        pressure = data[33]<<8 | data[34]
+        height = data[35]
+        weight = data[36]
+        age = data[37]
+        gender = data[38]
+        print(f"[BLE RESPONSE] spo2 = {spo2}, spo2_confidence = {spo2_confidence} \n hr = {hr}, hr_confidence = {hr_confidence} \n walk step = {walk}, run step = {run} \n motion_flag = {motion_flag} \n activity = {activity} \n battery = {battery} \n scd = {scd} \n acc_x = {acc_x-0x10000 if acc_x>32768 else acc_x}, acc_y = {acc_y-0x10000 if acc_y>32768 else acc_y}, acc_z = {acc_z-0x10000 if acc_z>32768 else acc_z} \n gyro_x = {gyro_x-0x10000 if gyro_x>32768 else gyro_x}, gyro_y = {gyro_y-0x10000 if gyro_y>32768 else gyro_y}, gyro_z = {gyro_z-0x10000 if gyro_z>32768 else gyro_z} \n fall_detect = {fall_detect} \n temp = {temp/100} \n pressure = {pressure} \n height = {height}, weight = {weight}, age = {age}, gender = {gender}")
+            
+    elif cmd == RESP_MAX32630_CMD:
+        height = data[0]
+        weight = data[1]
+        age = data[2]
+        gender = data[3]
+        print(f"[BLE RESPONSE] height = {height}, weight = {weight}, age = {age}, gender = {gender}")

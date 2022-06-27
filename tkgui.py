@@ -24,8 +24,8 @@ class TkGUI:
         scan frame
         """
         self.frame_scan = Frame(self.root)
-        self.scan_status_text = StringVar()
-        self.scan_status_label = Label(self.frame_scan, font=font.Font(size=10, weight="bold"), textvariable=self.scan_status_text)
+        self.scan_state_text = StringVar()
+        self.scan_state_label = Label(self.frame_scan, font=font.Font(size=10, weight="bold"), textvariable=self.scan_state_text)
         self.scan_btn = Button(self.frame_scan, text="BLE Scan", command=self.loop.do_scan_tasks)
         self.scan_stop_btn = Button(self.frame_scan, text="BLE Scan Stop", command=self.loop.do_scan_stop_tasks)
         self.connect_btn = Button(self.frame_scan, text="BLE Connect", command=self.loop.do_ble_connect_tasks)
@@ -33,11 +33,11 @@ class TkGUI:
         self.title_scan_list = Label(self.frame_scan, text="SCAN LIST",font=font.Font(size=10, weight="bold"))
         self.frame_scan_list = Frame(self.frame_scan)
         self.scrollbar = Scrollbar(self.frame_scan_list, orient="vertical")
-        self.scanlistbox = Listbox(self.frame_scan_list, selectmode='extended', yscrollcommand=self.scrollbar.set, height=10, width=45)
+        self.scanlistbox = Listbox(self.frame_scan_list, selectmode='browse', yscrollcommand=self.scrollbar.set, height=10, width=45)
         """
         scan frame show
         """
-        self.scan_status_label.grid(row=0, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )     
+        self.scan_state_label.grid(row=0, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )     
         self.scan_btn.grid(row=1, column=0, sticky=constants.W)
         self.scan_stop_btn.grid(row=1, column=1, sticky=constants.W)
         self.connect_btn.grid(row=1, column=2, sticky=constants.W)
@@ -49,8 +49,8 @@ class TkGUI:
         connect frame
         """
         self.frame_connect = Frame(self.root)
-        self.status_text = StringVar()
-        self.status_label = Label(self.frame_connect, font=font.Font(size=10, weight="bold"), textvariable=self.status_text)
+        self.state_text = StringVar()
+        self.state_label = Label(self.frame_connect, font=font.Font(size=10, weight="bold"), textvariable=self.state_text)
         self.disconnect_btn = Button(self.frame_connect, text="BLE Disconnect", command=self.loop.do_ble_disconnect_tasks)
         self.measure_btn = Button(self.frame_connect, text="Measure Start", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_START_MEASURE))
         self.stop_btn = Button(self.frame_connect, text="Measure Stop", command=lambda:self.loop.do_ble_write_tasks(protocol.REQ_STOP_MEASURE))
@@ -87,7 +87,7 @@ class TkGUI:
         self.title_connected_device_list = Label(self.frame_connect, text="Connected Device List",font=font.Font(size=10, weight="bold"))
         self.client_frame = Frame(self.frame_connect)
         self.client_scrollbar = Scrollbar(self.client_frame, orient="vertical")
-        self.client_listbox = Listbox(self.client_frame, selectmode='extended', yscrollcommand=self.scrollbar.set, height=5, width=40)
+        self.client_listbox = Listbox(self.client_frame, selectmode='browse', yscrollcommand=self.client_scrollbar.set, height=5, width=40)
 
         self.label=Label(self.frame_connect, text="Packet Input ex) 0x02 0x01 0x01 0x01 0x03")
         self.input_text=Text(self.frame_connect, height=5)
@@ -95,7 +95,7 @@ class TkGUI:
         """
         connect frame show
         """
-        self.status_label.grid(row=0, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S)
+        self.state_label.grid(row=0, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S)
         
         self.disconnect_btn.grid(row=1, column=0, sticky=constants.W)
         self.measure_btn.grid(row=1,column=1,  sticky=constants.W)
@@ -158,8 +158,8 @@ class TkGUI:
             self.connect_frame_show()
             
         else:
-            self.status_label_set("IDLE")
-            self.scan_status_label_set("IDLE")
+            self.state_label_set("IDLE")
+            self.scan_state_label_set("IDLE")
 
             self.scanlistbox_init()
            
@@ -187,11 +187,11 @@ class TkGUI:
     """
     label set function
     """  
-    def status_label_set(self, messeage):
-        self.status_text.set(f"BLE STATUS :  {messeage}")
+    def state_label_set(self, messeage):
+        self.state_text.set(f"BLE state :  {messeage}")
 
-    def scan_status_label_set(self, messeage):
-        self.scan_status_text.set(f"SCAN STATUS : {messeage}")
+    def scan_state_label_set(self, messeage):
+        self.scan_state_text.set(f"SCAN state : {messeage}")
 
     def read_label_set(self, data):
         self.read_text.set(f"READ DATA : {data}")
