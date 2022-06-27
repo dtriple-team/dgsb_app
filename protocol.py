@@ -144,8 +144,8 @@ def ble_read_parsing(data):
         elif (len(read_packet) == 2 or len(read_packet) == 4) and i == 94: # 구분자 체크
             read_packet.append(i)
         else :
-            read_packet.append(i) # length와 data 담기
-            if len(read_packet)>=4 : # len 이 4보다 큰 경우 
+            if len(read_packet)==3 or len(read_packet)>=5 : # len 체크 
+                read_packet.append(i) 
                 if len(read_packet) == read_packet[3]+6 : # 총 length가 read data의 length와 비교
                     if i == 3: # etx 체크
                         ble_read_classify_cmd(hex(read_packet[1]), read_packet[5:len(read_packet)-1])

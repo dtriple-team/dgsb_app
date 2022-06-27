@@ -22,7 +22,8 @@ class BLE:
         self.vital_loop = []
         self.read_packet = []
         self.read_packet_list = []
-      
+        # self.read_packet_list.append({'data':bytearray([0x02, 0x81, 0x5E, 0x01, 0x01 ,0x01, 0x03]), 'address':''})
+        # self.read_packet_list.append({'data':bytearray([0x02, 0x81, 0x5E, 0x01, 0x04, 0x01]), 'address':''})
         self.write_packet_list=[]
 
         if file_test:
@@ -288,13 +289,12 @@ class BLE:
                     if (self.write_packet_list[wi]['address'] == r['address']) : # write한 패킷의 응답이 왔는 지 체크
                         if wi not in delete_list:
                             delete_list.append(wi)
-                        hex_data = print_hex(r['data'])
-                        print(f"[BLE READ] {r['address']} : {hex_data}")
-                        protocol.ble_read_parsing(r['data'])
-                        if file_test:
-                            self.file_write_ble.file_write_time("READ",hex_data)
                         break
-                        
+                hex_data = print_hex(r['data'])
+                print(f"[BLE READ] {r['address']} : {hex_data}")
+                protocol.ble_read_parsing(r['data'])
+                if file_test:
+                    self.file_write_ble.file_write_time("READ",hex_data)
         for d in delete_list:
             del self.write_packet_list[d]
         self.read_packet_list.clear() 
