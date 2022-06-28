@@ -36,7 +36,7 @@ RESP_ALL_DATA_CMD = "0x8f"
 RESP_MAX32630_CMD = "0x90"
 
 read_packet = []
-filetest = True # True -> data 확인할 수 있음.
+file_test = True # True -> data 확인할 수 있음.
 def change_signed_type(data, division):
     if data>32768:
         return (data-0x10000)/division
@@ -146,7 +146,7 @@ def ble_read_classify_cmd(cmd, data): # cmd 별로 분류 -> 데이터 받을 �
     
     return None
 def ble_read_parsing(data, name): # 데이터 parsing 하는 부분
-    global read_packet, filetest
+    global read_packet, file_test
     
     for i in list(data): # 하나 씩 체크
         error = False
@@ -164,7 +164,7 @@ def ble_read_parsing(data, name): # 데이터 parsing 하는 부분
                         resp_data = ble_read_classify_cmd(hex(read_packet[1]), read_packet[5:len(read_packet)-1])
                         if resp_data :
                             print(resp_data)
-                            if filetest:
+                            if file_test:
                                 parsingFile = file.File()
                                 parsingFile.filename_change(name)
                                 parsingFile.file_write_data(resp_data)
