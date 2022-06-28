@@ -86,7 +86,7 @@ Python에서 사용하고 있는 'Bleak' 모듈이 불안정하기 때문에 발
 
 ![No Response](./images/6.jpg)
 
-현재 안정적인 통신을 위해 write한 패킷의 response가 없을 경우에는 write할 수 없도록 하고, 5초 이내로 response가 없는 경우에는 Time Out 처리가 되도록 한다.
+현재 안정적인 통신을 위해 write한 패킷의 response가 없을 경우에는 write할 수 없도록 하고, 5초 이내로(측정 시작시에는 30초) response가 없는 경우에는 Time Out 처리가 되도록 한다.
 
 ## Data Response and Parsing
 

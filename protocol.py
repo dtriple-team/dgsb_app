@@ -35,8 +35,9 @@ RESP_PRESSURE_CMD = "0x8e"
 RESP_ALL_DATA_CMD = "0x8f"
 RESP_MAX32630_CMD = "0x90"
 
-read_packet = []
+read_packet = {}
 file_test = False # True -> 파싱한 데이터 파일로 저장
+parsinglist = []
 def change_signed_type(data, division):
     if data>32768:
         return (data-0x10000)/division
@@ -143,34 +144,39 @@ def ble_read_classify_cmd(cmd, data): # cmd 별로 분류 -> 데이터 받을 �
         return f"[BLE RESPONSE] height = {height}, weight = {weight}, age = {age}, gender = {gender}\n"
     
     return None
-def ble_read_parsing(data, name): # 데이터 parsing 하는 부분
-    global read_packet, file_test
-    
-    for i in list(data): # 하나 씩 체크
+def ble_read_parsing(read): # 데이터 parsing 하는 부분
+    global read_packet, file_test, parsinglist
+    if read['address'] not in read_packet:
+        read_packet[read['address']] =[]
+    for i in list(read['data']): # 하나 씩 체크
         error = False
-        if not read_packet and i==2 : # stx 체크
-            read_packet.append(i)
-        elif len(read_packet) == 1 and (i>=128 and i<=146) : # cmd 체크
-            read_packet.append(i)
-        elif (len(read_packet) == 2 or len(read_packet) == 4) and i == 94: # 구분자 체크
-            read_packet.append(i)
+        if not read_packet[read['address']] and i==2 : # stx 체크
+            read_packet[read['address']].append(i)
+        elif len(read_packet[read['address']]) == 1 and (i>=129 and i<=146) : # cmd 체크
+            read_packet[read['address']].append(i)
+        elif (len(read_packet[read['address']]) == 2 or len(read_packet[read['address']]) == 4) and i == 94: # 구분자 체크
+            read_packet[read['address']].append(i)
+        elif len(read_packet[read['address']])==3: # length 값 받기
+            read_packet[read['address']].append(i)
         else :
-            if len(read_packet)==3 or len(read_packet)>=5 : # len 체크 
-                read_packet.append(i) 
-                if len(read_packet) == read_packet[3]+6 : # 총 length와 read data로 온 length를 비교
+            if len(read_packet[read['address']])>=5 : # data 받는 영역
+                read_packet[read['address']].append(i) 
+                if len(read_packet[read['address']]) == read_packet[read['address']][3]+6 : # 총 length와 read data로 온 length를 비교
                     if i == 3: # etx 체크
-                        resp_data = ble_read_classify_cmd(hex(read_packet[1]), read_packet[5:len(read_packet)-1])
+                        parsinglist.append({'address':read['address'], 'data': read_packet[read['address']]})
+                        resp_data = ble_read_classify_cmd(hex(read_packet[read['address']][1]), read_packet[read['address']][5:len(read_packet[read['address']])-1])
                         if resp_data :
                             print(resp_data)
                             if file_test:
                                 parsingFile = file.File()
-                                parsingFile.filename_change(name)
+                                parsingFile.filename_change(read['addres'])
                                 parsingFile.file_write_data(resp_data)
-                        read_packet = []
+                        read_packet[read['address']] = []
                     else: # etx가 아닌 경우 error
                         error = True
             else : # stx, cmd, 구분자 오류인 경우 error
                 error = True
         if error :
             print("[BLE READ] ERROR PACKET")
-            read_packet = []
+            read_packet[read['address']] = []
+    del read_packet[read['address']]
