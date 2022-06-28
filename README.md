@@ -48,6 +48,7 @@ python main.py
 1. BLE Scan, Stop 및 Connect를 할 수 있는 영역
 2. 연결된 BLE의 연결 해제 및 통신을 할 수 있는 영역
 3. BLE Program 종료 -> 처음 화면으로 돌아감
+   - 연결된 Device가 있을 경우에는 모두 연결 해제를 해야 하기 때문에 처음 화면으로 돌아가는 시간이 느릴 수 있음
 4. 비정상적인 종료를 방지하기 위해 BLE Program 실행 상태에서는 종료가 안되고 해당 창이 뜸
 
 ## BLE Scan 영역
@@ -77,6 +78,7 @@ python main.py
 
 ![WinError](./images/5.jpg)
 ![Not Get GATT Services](./images/8.jpg)
+
 위 상황과 같은 에러가 발생했을 때는 밴드와 앱을 다시 껐다 켜주세요.
 Python에서 사용하고 있는 'Bleak' 모듈이 불안정하기 때문에 발생하는 에러 입니다.
 
@@ -92,3 +94,4 @@ Python에서 사용하고 있는 'Bleak' 모듈이 불안정하기 때문에 발
 ![Parsing](./images/9.jpg)
 현재 read 데이터의 parsing은 위와 같이 print 됩니다. 데이터 받을 때 참고 하시면 됩니다.
 코드 부분에서는 `protocol.py`의 `ble_read_parsing()`, `ble_read_classify_cmd()` 함수를 참고해주세요.
+txt 파일로 출력하는 기능을 활성화 시키려면 `filetest`를 `True`로 변경해주세요.
