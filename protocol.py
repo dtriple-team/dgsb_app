@@ -40,7 +40,7 @@ def change_signed_type(data, division):
     else : 
         return data/division
     
-def ble_read_classify_cmd(cmd, data):
+def ble_read_classify_cmd(cmd, data): # cmd 별로 분류 -> 데이터 받을 때 참고 !
     if cmd == RESP_MEASURE_START_CMD:
         print("[BLE RESPONSE] MEASURE START!\n")
     elif cmd == RESP_MEASURE_STOP_CMD:

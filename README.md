@@ -90,3 +90,4 @@ Python에서 사용하고 있는 'Bleak' 모듈이 불안정하기 때문에 발
 ![Parsing](./images/7.jpg)
 
 현재 read 데이터의 parsing은 위와 같이 print 되니 parsing 할 때 참고 하시면 됩니다.
+코드 부분에서는 `protocol.py`의 `ble_read_parsing()`, `ble_read_classify_cmd()` 함수를 참고하세요.
