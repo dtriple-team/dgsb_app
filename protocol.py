@@ -36,7 +36,7 @@ RESP_ALL_DATA_CMD = "0x8f"
 RESP_MAX32630_CMD = "0x90"
 
 read_packet = []
-file_test = True # True -> data 확인할 수 있음.
+file_test = False # True -> data 확인할 수 있음.
 def change_signed_type(data, division):
     if data>32768:
         return (data-0x10000)/division
