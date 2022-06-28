@@ -21,6 +21,7 @@ venv\Scripts\activate
 ## python module 설치
 
 ```
+cd dgsb_app
 pip install -r requirements.txt
 ```
 
@@ -72,10 +73,10 @@ python main.py
 
 # 참고 사항
 
-## WinError
+## Connect Error
 
 ![WinError](./images/5.jpg)
-
+![Not Get GATT Services](./images/8.jpg)
 위 상황과 같은 에러가 발생했을 때는 밴드와 앱을 다시 껐다 켜주세요.
 Python에서 사용하고 있는 'Bleak' 모듈이 불안정하기 때문에 발생하는 에러 입니다.
 
@@ -85,9 +86,9 @@ Python에서 사용하고 있는 'Bleak' 모듈이 불안정하기 때문에 발
 
 현재 안정적인 통신을 위해 write한 패킷의 response가 없을 경우에는 write할 수 없도록 하고, 5초 이내로 response가 없는 경우에는 Time Out 처리가 되도록 한다.
 
-## Parsing
+## Data Response and Parsing
 
 ![Parsing](./images/7.jpg)
-
-현재 read 데이터의 parsing은 위와 같이 print 되니 parsing 할 때 참고 하시면 됩니다.
-코드 부분에서는 `protocol.py`의 `ble_read_parsing()`, `ble_read_classify_cmd()` 함수를 참고하세요.
+![Parsing](./images/9.jpg)
+현재 read 데이터의 parsing은 위와 같이 print 됩니다. 데이터 받을 때 참고 하시면 됩니다.
+코드 부분에서는 `protocol.py`의 `ble_read_parsing()`, `ble_read_classify_cmd()` 함수를 참고해주세요.
