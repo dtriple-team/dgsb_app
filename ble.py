@@ -208,8 +208,7 @@ class BLE:
                 await asyncio.sleep(1) 
                 await self.ble_read_thread(client, client_info.split(' ')[0]) # client 가 연결되고 나면 read를 체크하는 thread 실행
             except Exception as e:
-                self.root.messagebox_showwarning(f"[ERR] : {e} \n비정상적으로 연결이 해제된 경우 밴드와 앱을 재시작 해주세요.")
-                print('[ERR] : ', e)
+                print(f'[ERR] : {e} 비정상적으로 연결이 해제된 경우 밴드와 앱을 재시작 해주세요.')
         else:
             print("[BLE] Already connected")
     
@@ -237,7 +236,6 @@ class BLE:
     async def ble_write(self, client, data, name):
         for w in self.write_packet_list: # write한 패킷의 응답이 없을 경우, write 할 수 없음.
             if w['address']==client.address:
-                self.root.messagebox_showwarning(f"{client.address}로 보낸 패킷의 응답이 오지 않아 패킷을 보낼 수 없습니다.")
                 print(f"[BLE WRITE] No response from packets sent by {name}.")
                 return
         hex_data = print_hex(data)
