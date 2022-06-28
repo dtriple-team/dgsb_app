@@ -238,4 +238,7 @@ class TkGUI:
                 submit_packet.append(int(i, 16))
             self.loop.do_ble_write_tasks( address, bytearray(submit_packet))
 
+    def messagebox_showwarning(self,message):
+        messagebox.showwarning("warning",message)
+
 

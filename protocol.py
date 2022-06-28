@@ -36,7 +36,7 @@ RESP_ALL_DATA_CMD = "0x8f"
 RESP_MAX32630_CMD = "0x90"
 
 read_packet = []
-file_test = False # True -> data 확인할 수 있음.
+file_test = False # True -> 파싱한 데이터 파일로 저장
 def change_signed_type(data, division):
     if data>32768:
         return (data-0x10000)/division
@@ -49,8 +49,6 @@ def ble_read_classify_cmd(cmd, data): # cmd 별로 분류 -> 데이터 받을 �
     if cmd == RESP_MEASURE_START_CMD:
         if data[0] == 1:
             return "[BLE RESPONSE] MEASURE START!\n"
-            print("[BLE RESPONSE] MEASURE START!\n")
-            
         else :
             return None
     elif cmd == RESP_MEASURE_STOP_CMD:
@@ -159,7 +157,7 @@ def ble_read_parsing(data, name): # 데이터 parsing 하는 부분
         else :
             if len(read_packet)==3 or len(read_packet)>=5 : # len 체크 
                 read_packet.append(i) 
-                if len(read_packet) == read_packet[3]+6 : # 총 length가 read data의 length와 비교
+                if len(read_packet) == read_packet[3]+6 : # 총 length와 read data로 온 length를 비교
                     if i == 3: # etx 체크
                         resp_data = ble_read_classify_cmd(hex(read_packet[1]), read_packet[5:len(read_packet)-1])
                         if resp_data :
