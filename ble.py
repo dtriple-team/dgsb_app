@@ -1,7 +1,6 @@
 import asyncio, threading, file, protocol
 from bleak import BleakClient, BleakScanner #BLE 통신을 위한 모듈
 from ble_print import print_hex
-from datetime import datetime
 file_test = False # True-> write, read packet을 file로 확인할 수 있음
 read_write_charcteristic_uuid = "f0001111-0451-4000-b000-000000000000"
 class BLE:
@@ -80,6 +79,7 @@ class BLE:
         for w in self.write_packet_list:
             if w['address'] == client.address :
                 self.write_packet_list.remove(w)
+                break
 
         if client in self.connected_client_list:
             self.connected_client_list.remove(client)
@@ -214,6 +214,8 @@ class BLE:
                 await client.connect()
                 await asyncio.sleep(1)
                 print("[BLE] Connect Success!")
+                if client.address in self.disconnect_list:
+                    self.disconnect_list.remove(client.address)
                 self.connected_client_list.append(client) # 연결된 client 는 list에 추가
                 self.root.clientlistbox_insert(len(self.connected_client_list)-1, client_info)
                 self.root.state_label_set(f"Connected {client.address}") 
@@ -264,19 +266,19 @@ class BLE:
     async def ble_write(self, client, data, name):
         for w in self.write_packet_list: # write한 패킷의 응답이 없을 경우, write 할 수 없음.
             if w['address']==client.address:
-                print(f"[BLE WRITE] No response from packets sent by {name}.")
+                print(f"[BLE WRITE] No response from packets sent by {client.address}.")
                 return
         hex_data = print_hex(data)
-        print(f"[BLE WRITE] {name} : {hex_data}")
+        print(f"[BLE WRITE] {client.address} : {hex_data}")
         if file_test:
-            self.file_write_ble.file_write_time("WRITE", hex_data)
-        list_content = {'address':"123",'data':data}
+            self.file_write_ble.file_write_time("WRITE", client.address, hex_data)
+        list_content = {'address':client.address,'data':data}
         self.write_packet_list.append(list_content)
         await client.write_gatt_char(read_write_charcteristic_uuid,  data) # 실제 band로 write 하는 함수 호출.
         time = 5
         if data[1] == 65:
             time = 30
-        await self.ble_write_timeout_check(list_content, time)
+        await self.ble_write_timeout_check(list_content, time) # timeout corountine
 
     # write packet의 길이를 체크 하여 20 byte씩 쪼개서 보내도록 함.
     async def ble_write_check(self, client, data, name): 
@@ -301,7 +303,8 @@ class BLE:
         if client.address not in self.disconnect_list:
             self.read_packet_list.append(  # 실제 data read하는 함수. read_packet_list에 read된 데이터 추가.
                 {'address':client.address,
-                'data':await client.read_gatt_char(read_write_charcteristic_uuid)})
+                'data':await client.read_gatt_char(read_write_charcteristic_uuid),
+                'name':name})
         
 
     # connect 시작 후 0.1초마다 read 함. 
@@ -309,7 +312,7 @@ class BLE:
         while client.address not in self.disconnect_list:
             await self.ble_read(client, name)
             await asyncio.sleep(0.1)
-        del self.disconnect_list[self.disconnect_list.index(client.address)]
+        self.disconnect_list.remove(client.address)
         
     # read_packet_list를 체크 하는 thread
     async def ble_read_packet_list_thread(self): 
@@ -322,7 +325,7 @@ class BLE:
                     print(f"[BLE READ] {r['address']} : {hex_data}")
                     protocol.ble_read_parsing(r) # 실제 데이터 파싱하는 함수 호출
                     if file_test:
-                        self.file_write_ble.file_write_time("READ",hex_data)
+                        self.file_write_ble.file_write_time("READ",r['address'],hex_data)
             for p in protocol.parsinglist: # 성공적으로 온 read pakcet으로 for문 실행
                 for wi in range(len(self.write_packet_list)):
                     if wi not in delete_list:

@@ -11,9 +11,9 @@ class File:
     def file_write(self, title, data):
         self.fw.write(f'[{title}] data = {data}')
 
-    def file_write_time(self, title, data):
+    def file_write_time(self, title, address, data):
         self.fw = open(self.filename, "a")
-        self.fw.write(f'[{title}] data = {data} / datetime = {datetime.now()}\n')
+        self.fw.write(f'[{title}] address = {address} / data = {data} / datetime = {datetime.now()}\n')
         self.fw.close()
         
     def file_write_data(self, data):

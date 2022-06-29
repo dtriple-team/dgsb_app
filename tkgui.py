@@ -74,7 +74,6 @@ class TkGUI:
         self.get_pressure = Button(self.frame_connect, text="GET PRESSURE", command=lambda:self.loop.do_ble_write_tasks(self.clientlistbox_return(),protocol.REQ_GET_PRESSURE))
 
         self.get_all_btn = Button(self.frame_connect, text="GET ALL", command=lambda:self.loop.do_ble_write_tasks(self.clientlistbox_return(),protocol.REQ_GET_ALL_DATA))
-        self.get_max32630_btn = Button(self.frame_connect, text="GET MAX32630", command=lambda:self.loop.do_ble_write_tasks(self.clientlistbox_return(),protocol.REQ_GET_MAX32630))
         self.get_all_continue = Button(self.frame_connect, text="GET ALL Continue",command=lambda:self.loop.do_ble_write_loop_tasks(self.clientlistbox_return(), protocol.REQ_GET_ALL_DATA, 1))
         self.read_text = StringVar()
         self.read_text.set("READ DATA : ")
@@ -117,10 +116,7 @@ class TkGUI:
         self.get_pressure.grid(row=5, column=2, sticky=constants.W)
 
         self.get_all_btn.grid(row=6, column=0, sticky=constants.W)
-
-        
-        self.get_max32630_btn.grid(row=6, column=1, sticky=constants.W)
-        self.get_all_continue.grid(row=6, column=2, sticky=constants.W)
+        self.get_all_continue.grid(row=6, column=1, sticky=constants.W)
         self.title_connected_device_list.grid(row=7, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
         self.client_frame.grid(row=8, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S)
         self.client_scrollbar.pack(side=constants.RIGHT, fill=constants.Y)
