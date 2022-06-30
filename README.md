@@ -1,4 +1,4 @@
-# 코드 실행 방법
+# Getting Started
 
 ## Git Clone
 
@@ -6,34 +6,34 @@
 git clone https://github.com/jjaekkaemi/dgsb_app.git
 ```
 
-## 가상환경 생성
+## Create Virtual Environment
 
 ```
 python -m venv venv
 ```
 
-## 가상 환경 실행
+## Excute Virtual Environment
 
 ```
 venv\Scripts\activate
 ```
 
-## python module 설치
+## Installation
 
 ```
 cd dgsb_app
 pip install -r requirements.txt
 ```
 
-## python 실행
+## Excute
 
 ```
 python main.py
 ```
 
-# 프로그램 사용 방법
+# Page Description
 
-## 처음 화면
+## First Page
 
 ![First Page](./images/1.jpg)
 
@@ -41,7 +41,7 @@ python main.py
 2. GUI Program 종료
 3. 현재 화면에서는 비활성화
 
-## BLE Program 실행 화면
+## BLE Program Page
 
 ![BLE Program Page](./images/2.jpg)
 
@@ -51,7 +51,7 @@ python main.py
    - 연결된 Device가 있을 경우에는 모두 연결 해제를 해야 하기 때문에 처음 화면으로 돌아가는 시간이 느릴 수 있음
 4. 비정상적인 종료를 방지하기 위해 BLE Program 실행 상태에서는 종료가 안됨. `PROGRAM STOP` 버튼을 누르고 처음 화면에서 종료해야함.
 
-## BLE Scan 영역
+## BLE Scan Frame
 
 ![BLE Scan Frame](./images/3.jpg)
 
@@ -61,7 +61,7 @@ python main.py
 4. `SCAN LIST`에서 BLE 연결할 device를 선택하여 연결 시도.
 5. 현재 Scan된 Device가 나타나는 리스트
 
-## BLE Connect 영역
+## BLE Connect Frame
 
 ![BLE Connect Frame](./images/4.jpg)
 
@@ -72,7 +72,7 @@ python main.py
 5. 현재 연결된 Device가 나타남
 6. 원하는 패킷을 예시처럼 입력한 후, 7번의 `Submit` 누르면 전송됨
 
-# 참고 사항
+# Note
 
 ## Connect Error
 
