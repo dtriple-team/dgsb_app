@@ -12,7 +12,7 @@ git clone https://github.com/jjaekkaemi/dgsb_app.git
 python -m venv venv
 ```
 
-## Excute Virtual Environment
+## Execute Virtual Environment
 
 ```
 venv\Scripts\activate
@@ -25,7 +25,7 @@ cd dgsb_app
 pip install -r requirements.txt
 ```
 
-## Excute
+## Execute
 
 ```
 python main.py
