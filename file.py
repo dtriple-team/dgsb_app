@@ -1,10 +1,11 @@
 from datetime import datetime
+import csv, os
 class File:
-    def __init__(self):
+    def __init__(self, name, date):
         self.fr = None
         self.fw = None 
         self.fa = None
-        self.filename = f"./file/ble_log_{self.return_today()}.txt"
+        self.filename = f"./file/{name}_{date}.csv"
     def filename_change(self, filename):
         self.filename = filename
 
@@ -17,9 +18,25 @@ class File:
         self.fw.close()
         
     def file_write_data(self, data):
-        self.fw = open(f"./file/{self.filename}.txt", "a")
+        self.fw = open(f"/file/{self.filename}.txt", "a")
         self.fw.write(data)
         self.fw.close()
+
+    def file_write_csv(self, data):
+        if os.path.isfile(os.path.join(os.getcwd(),self.filename.replace("./","").replace("/","\\"))):
+
+            f = open(self.filename, "a", newline='')
+            wr = csv.writer(f)
+            wr.writerow(data)
+            f.close()
+        else :
+            f = open(self.filename, "w", newline='')
+            wr = csv.writer(f)
+            wr.writerow(["spo2", "spo2 confidence", "hr", "hr confidence", "walk", "run", 
+        "motion flag", "activity", "battery", "scd", "acc x", "acc y", "acc z", 
+        "gyro x", "gyro y", "gyro z", "fall detect", "temp", "pressure"])
+            wr.writerow(data)
+            f.close()
 
     def file_write_close(self):
         self.fw.close()

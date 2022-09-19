@@ -105,3 +105,4 @@ dist
 
 *.pyc 
 *.txt
+*.csv

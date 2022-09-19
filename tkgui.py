@@ -75,6 +75,11 @@ class TkGUI:
 
         self.get_all_btn = Button(self.frame_connect, text="GET ALL", command=lambda:self.loop.do_ble_write_tasks(self.clientlistbox_return(),protocol.REQ_GET_ALL_DATA))
         self.get_all_continue = Button(self.frame_connect, text="GET ALL Continue",command=lambda:self.loop.do_ble_write_loop_tasks(self.clientlistbox_return(), protocol.REQ_GET_ALL_DATA, 1))
+        
+        self.file_test_text = StringVar()
+        self.file_test_text.set("CSV ON")
+        
+        self.file_test = Button(self.frame_connect, textvariable=self.file_test_text, command=self.setting_file_test)
         self.read_text = StringVar()
         self.read_text.set("READ DATA : ")
         self.write_text = StringVar()
@@ -91,6 +96,56 @@ class TkGUI:
         self.label=Label(self.frame_connect, text="Packet Input ex) 0x02 0x01 0x01 0x01 0x03")
         self.input_text=Text(self.frame_connect, height=5)
         self.submit_btn = Button(self.frame_connect, text="Submit", command=lambda:self.submit_button(self.clientlistbox_return())) # 입력한 packet을 write 함.
+        
+        self.frame_empty = Frame(self.frame_connect)
+
+        self.hr_text = StringVar()
+        self.frame_hr = Frame(self.frame_connect,borderwidth = 2,relief="ridge", width=20, height =10)
+        self.label_hr = Label(self.frame_hr, text="90", width = 10, height=2, textvariable=self.hr_text,font=font.Font(size=8))
+        self.label_hr_title = Label(self.frame_hr, text="HR", width = 10, height=2,font=font.Font(size=9, weight="bold"))
+
+        self.spo2_text = StringVar()
+        self.frame_spo2 = Frame(self.frame_connect,borderwidth = 2,relief="ridge", width=20, height =10)
+        self.label_spo2 = Label(self.frame_spo2, text="90", width = 10, height=2, textvariable=self.spo2_text,font=font.Font(size=8))
+        self.label_spo2_title = Label(self.frame_spo2, text="SpO2", width = 10, height=2,font=font.Font(size=9, weight="bold"))
+
+        self.battery_text = StringVar()
+        self.frame_battery = Frame(self.frame_connect,borderwidth = 2,relief="ridge", width=20, height =10)
+        self.label_battery = Label(self.frame_battery, text="90", width = 10, height=2, textvariable=self.battery_text,font=font.Font(size=8))
+        self.label_battery_title = Label(self.frame_battery, text="Battery", width = 10, height=2,font=font.Font(size=9, weight="bold"))
+
+        self.accx_text = StringVar()
+        self.frame_accx = Frame(self.frame_connect,borderwidth = 2,relief="ridge", width=20, height =10)
+        self.label_accx = Label(self.frame_accx, text="90", width = 10, height=2, textvariable=self.accx_text,font=font.Font(size=8))
+        self.label_accx_title = Label(self.frame_accx, text="ACC X", width = 10, height=2,font=font.Font(size=9, weight="bold"))
+
+        
+        self.accy_text = StringVar()
+        self.frame_accy = Frame(self.frame_connect,borderwidth = 2,relief="ridge", width=20, height =10)
+        self.label_accy = Label(self.frame_accy, text="90", width = 10, height=2, textvariable=self.accy_text,font=font.Font(size=8))
+        self.label_accy_title = Label(self.frame_accy, text="ACC Y", width = 10, height=2,font=font.Font(size=9, weight="bold"))
+
+        self.accz_text = StringVar()
+        self.frame_accz = Frame(self.frame_connect,borderwidth = 2,relief="ridge", width=20, height =10)
+        self.label_accz = Label(self.frame_accz, text="90", width = 10, height=2, textvariable=self.accz_text,font=font.Font(size=8))
+        self.label_accz_title = Label(self.frame_accz, text="ACC Z", width = 10, height=2,font=font.Font(size=9, weight="bold"))
+
+        self.gyrox_text = StringVar()
+        self.frame_gyrox = Frame(self.frame_connect,borderwidth = 2,relief="ridge", width=20, height =10)
+        self.label_gyrox = Label(self.frame_gyrox, text="90", width = 10, height=2, textvariable=self.gyrox_text,font=font.Font(size=8))
+        self.label_gyrox_title = Label(self.frame_gyrox, text="Gyro X", width = 10, height=2,font=font.Font(size=9, weight="bold"))
+
+        
+        self.gyroy_text = StringVar()
+        self.frame_gyroy = Frame(self.frame_connect,borderwidth = 2,relief="ridge", width=20, height =10)
+        self.label_gyroy = Label(self.frame_gyroy, text="90", width = 10, height=2, textvariable=self.gyroy_text,font=font.Font(size=8))
+        self.label_gyroy_title = Label(self.frame_gyroy, text="Gyro Y", width = 10, height=2,font=font.Font(size=9, weight="bold"))
+
+        self.gyroz_text = StringVar()
+        self.frame_gyroz = Frame(self.frame_connect,borderwidth = 2,relief="ridge", width=20, height =10)
+        self.label_gyroz = Label(self.frame_gyroz, text="90", width = 10, height=2, textvariable=self.gyroz_text,font=font.Font(size=8))
+        self.label_gyroz_title = Label(self.frame_gyroz, text="Gyro Z", width = 10, height=2,font=font.Font(size=9, weight="bold"))
+
         """
         connect frame show
         """
@@ -117,14 +172,53 @@ class TkGUI:
 
         self.get_all_btn.grid(row=6, column=0, sticky=constants.W)
         self.get_all_continue.grid(row=6, column=1, sticky=constants.W)
+        self.file_test.grid(row=6, column=2, sticky=constants.W)
         self.title_connected_device_list.grid(row=7, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
         self.client_frame.grid(row=8, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S)
         self.client_scrollbar.pack(side=constants.RIGHT, fill=constants.Y)
         self.client_listbox.pack(expand=True, fill=constants.Y)
         
-        self.label.grid(row=9, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S)
-        self.input_text.grid(row=10, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S)
-        self.submit_btn.grid(row=11, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S)
+        # self.label.grid(row=9, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S)
+        # self.input_text.grid(row=10, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S)
+        # self.submit_btn.grid(row=11, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S)
+
+
+        self.frame_empty.grid(row = 9, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S, padx=10, pady=10)
+        self.frame_hr.grid(row = 10, column = 0)
+        self.label_hr.grid(row = 0, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
+        self.label_hr_title.grid(row = 1, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
+
+        self.frame_spo2.grid(row = 10, column = 1)
+        self.label_spo2.grid(row = 0, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
+        self.label_spo2_title.grid(row = 1, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
+
+        self.frame_battery.grid(row = 10, column = 2)
+        self.label_battery.grid(row = 0, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
+        self.label_battery_title.grid(row = 1, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
+
+        self.frame_accx.grid(row = 11, column = 0)
+        self.label_accx.grid(row = 0, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
+        self.label_accx_title.grid(row = 1, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
+
+        self.frame_accy.grid(row = 11, column = 1)
+        self.label_accy.grid(row = 0, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
+        self.label_accy_title.grid(row = 1, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
+
+        self.frame_accz.grid(row = 11, column = 2)
+        self.label_accz.grid(row = 0, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
+        self.label_accz_title.grid(row = 1, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
+
+        self.frame_gyrox.grid(row = 12, column = 0)
+        self.label_gyrox.grid(row = 0, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
+        self.label_gyrox_title.grid(row = 1, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
+
+        self.frame_gyroy.grid(row = 12, column = 1)
+        self.label_gyroy.grid(row = 0, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
+        self.label_gyroy_title.grid(row = 1, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
+        
+        self.frame_gyroz.grid(row = 12, column = 2)
+        self.label_gyroz.grid(row = 0, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
+        self.label_gyroz_title.grid(row = 1, column=0, columnspan=3, sticky=constants.W+constants.E+constants.N+constants.S )
         self.loop.root_connect(self)
         self.change_ui(False)
 
@@ -190,6 +284,17 @@ class TkGUI:
 
     def write_label_set(self, data):
         self.write_text.set(f"WRITE DATA : {data}")
+
+    def band_data_label_set(self, hr, spo2, battery, accx, accy, accz, gyrox, gyroy, gyroz):
+        self.hr_text.set(f"{hr}")
+        self.spo2_text.set(f"{spo2}")
+        self.battery_text.set(f"{battery}")
+        self.accx_text.set(f"{accx}")
+        self.accy_text.set(f"{accy}")
+        self.accz_text.set(f"{accz}")
+        self.gyrox_text.set(f"{gyrox}")
+        self.gyroy_text.set(f"{gyroy}")
+        self.gyroz_text.set(f"{gyroz}")
     """
     listbox function
     """  
@@ -235,3 +340,10 @@ class TkGUI:
             self.loop.do_ble_write_tasks( address, bytearray(submit_packet))
 
 
+    def setting_file_test(self):
+        if protocol.file_test :
+            protocol.file_test = False
+            self.file_test_text.set("CSV ON")
+        else :
+            protocol.file_test = True
+            self.file_test_text.set("CSV OFF")

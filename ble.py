@@ -1,6 +1,7 @@
 import asyncio, threading, file, protocol
 from bleak import BleakClient, BleakScanner #BLE 통신을 위한 모듈
 from ble_print import print_hex
+from datetime import datetime
 file_test = False # True-> write, read packet을 file로 확인할 수 있음
 read_write_charcteristic_uuid = "f0001111-0451-4000-b000-000000000000"
 class BLE:
@@ -15,6 +16,7 @@ class BLE:
         self.scanlist = []
     
         self.connected_client_list = []
+        self.connected_client_file_list = []
         self.disconnect_list = []
         self.vital_loop = []
         
@@ -23,6 +25,7 @@ class BLE:
         
         if file_test:
             self.file_write_ble = file.File()
+            
     def init(self):
         self.disconnect_list = []
         self.vital_loop = []
@@ -82,7 +85,9 @@ class BLE:
                 break
 
         if client in self.connected_client_list:
+            self.connected_client_file_list.pop(self.connected_client_list.index(client))
             self.connected_client_list.remove(client)
+            
 
     """
     thread task function
@@ -217,6 +222,7 @@ class BLE:
                 if client.address in self.disconnect_list:
                     self.disconnect_list.remove(client.address)
                 self.connected_client_list.append(client) # 연결된 client 는 list에 추가
+                self.connected_client_file_list.append(self.return_today())
                 self.root.clientlistbox_insert(len(self.connected_client_list)-1, client_info)
                 self.root.state_label_set(f"Connected {client.address}") 
                 await self.ble_read_thread(client, client_info.split(' ')[0]) # client 가 연결되고 나면 read를 체크하는 thread 실행
@@ -323,7 +329,7 @@ class BLE:
                 if r['data'] != bytearray():
                     hex_data = print_hex(r['data']) 
                     print(f"[BLE READ] {r['address']} : {hex_data}")
-                    protocol.ble_read_parsing(r) # 실제 데이터 파싱하는 함수 호출
+                    protocol.ble_read_parsing(r, self.root, self.connected_client_file_list[self.get_index_select_client(r['address'])]) # 실제 데이터 파싱하는 함수 호출
                     if file_test:
                         self.file_write_ble.file_write_time("READ",r['address'],hex_data)
             for p in protocol.parsinglist: # 성공적으로 온 read pakcet으로 for문 실행
@@ -342,3 +348,6 @@ class BLE:
         except Exception as e:
             print(f"[Err] {e}")
             pass
+    def return_today(self):
+        today = str(datetime.now())
+        return f"{today[:10]} {today[11:13]}-{today[14:16]}-{today[17:19]}"

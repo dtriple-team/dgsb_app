@@ -45,70 +45,71 @@ def change_signed_type(data, division):
     else : 
         return data/division
     
-def ble_read_classify_cmd(cmd, data): # cmd 별로 분류 -> 데이터 받을 때 참고 !
+def ble_read_classify_cmd(cmd, data, root): # cmd 별로 분류 -> 데이터 받을 때 참고 !
     if cmd == RESP_MEASURE_START_CMD:
         if data[0] == 1:
-            return "[BLE RESPONSE] MEASURE START!\n"
+            print("[BLE RESPONSE] MEASURE START!\n")
+            return None
         else :
             return None
     elif cmd == RESP_MEASURE_STOP_CMD:
         if data[0] == 1:
-            return "[BLE RESPONSE] MEASURE STOP!\n"
-           
+            print("[BLE RESPONSE] MEASURE STOP!\n")
+            return None
         else :
             return None
     elif cmd == RESP_SPO2_CMD:
         spo2 = data[0]
         spo2_confidence = data[1]
-        return f"[BLE RESPONSE] spo2 = {spo2}%, spo2_confidence = {spo2_confidence}%\n"
-        
+        print(f"[BLE RESPONSE] spo2 = {spo2}%, spo2_confidence = {spo2_confidence}%\n")
+        return None
     elif cmd == RESP_HR_CMD:
         hr = data[0]<<8 | data[1]
         hr_confidence = data[2]
-        return f"[BLE RESPONSE] hr = {hr}bpm, hr_confidence = {hr_confidence}%\n"
-       
+        print(f"[BLE RESPONSE] hr = {hr}bpm, hr_confidence = {hr_confidence}%\n")
+        return None
     elif cmd == RESP_WALK_RUN_CMD:
         walk = data[0]<<24 | data[1]<<16 | data[2]<<8 | data[3]
         run = data[4]<<24 | data[5]<<16 | data[6]<<8 | data[7]
-        return f"[BLE RESPONSE] walk step = {walk}, run step = {run}\n"
-      
+        print(f"[BLE RESPONSE] walk step = {walk}, run step = {run}\n")
+        return None
     elif cmd == RESP_MOTION_FLAG_CMD:
         motion_flag = data[0]
-        return f"[BLE RESPONSE] motion_flag = {motion_flag}\n"
-      
+        print(f"[BLE RESPONSE] motion_flag = {motion_flag}\n")
+        return None
     elif cmd == RESP_ACTIVITY_CMD:
-        return f"[BLE RESPONSE] activity = {data[0]}\n"
-    
+        print(f"[BLE RESPONSE] activity = {data[0]}\n")
+        return None
     elif cmd == RESP_BATT_CMD:
-        return f"[BLE RESPONSE] battery = {data[0]}%\n"
-      
+        print(f"[BLE RESPONSE] battery = {data[0]}%\n")
+        return None
     elif cmd == RESP_SCD_CMD:
         scd = data[0]
-        return f"[BLE RESPONSE] scd = {scd}\n"
-     
+        print(f"[BLE RESPONSE] scd = {scd}\n")
+        return None
     elif cmd == RESP_ACC_CMD:
         acc_x = data[0]<<8 | data[1]
         acc_y = data[2]<<8 | data[3]
         acc_z = data[4]<<8 | data[5]
-        return f"[BLE RESPONSE] acc_x = {change_signed_type(acc_x, 1000)}, acc_y = {change_signed_type(acc_y, 1000)}, acc_z = {change_signed_type(acc_z, 1000)}\n"
-      
+        print(f"[BLE RESPONSE] acc_x = {change_signed_type(acc_x, 1000)}, acc_y = {change_signed_type(acc_y, 1000)}, acc_z = {change_signed_type(acc_z, 1000)}\n")
+        return
     elif cmd == RESP_GYRO_CMD:
         gyro_x = data[0]<<8 | data[1]
         gyro_y = data[2]<<8 | data[3]
         gyro_z = data[4]<<8 | data[5]
-        return f"[BLE RESPONSE] gyro_x = {change_signed_type(gyro_x,100)}, gyro_y = {change_signed_type(gyro_y,100)}, gyro_z = {change_signed_type(gyro_z,100)}\n"
-     
+        print(f"[BLE RESPONSE] gyro_x = {change_signed_type(gyro_x,100)}, gyro_y = {change_signed_type(gyro_y,100)}, gyro_z = {change_signed_type(gyro_z,100)}\n")
+        return None
     elif cmd == RESP_FALL_DETECT_CMD:
-        return f"[BLE RESPONSE] fall_detect = {data[0]}\n"
-     
+        print(f"[BLE RESPONSE] fall_detect = {data[0]}\n")
+        return None
     elif cmd == RESP_TEMP_CMD:
         temp = data[0]<<8 | data[1]
-        return f"[BLE RESPONSE] temp = {temp/100}°C\n"
-     
+        print(f"[BLE RESPONSE] temp = {temp/100}°C\n")
+        return None
     elif cmd == RESP_PRESSURE_CMD:
         pressure = data[0]<<8 | data[1]
-        return f"[BLE RESPONSE] pressure = {pressure/100}hPa\n"
-     
+        print(f"[BLE RESPONSE] pressure = {pressure/100}hPa\n")
+        return None
     elif cmd == RESP_ALL_DATA_CMD:
         spo2 = data[0]
         spo2_confidence = data[1]
@@ -120,30 +121,34 @@ def ble_read_classify_cmd(cmd, data): # cmd 별로 분류 -> 데이터 받을 �
         activity = data[14]
         battery = data[15]
         scd = data[16]
-        acc_x = data[17]<<8 | data[18]
-        acc_y = data[19]<<8 | data[20]
-        acc_z = data[21]<<8 | data[22]
-        gyro_x = data[23]<<8 | data[24]
-        gyro_y = data[25]<<8 | data[26]
-        gyro_z = data[27]<<8 | data[28]
+        acc_x = change_signed_type(data[17]<<8 | data[18], 1000)
+        acc_y = change_signed_type(data[19]<<8 | data[20],1000)
+        acc_z = change_signed_type(data[21]<<8 | data[22], 1000)
+        gyro_x = change_signed_type(data[23]<<8 | data[24], 1000)
+        gyro_y = change_signed_type(data[25]<<8 | data[26], 1000)
+        gyro_z = change_signed_type(data[27]<<8 | data[28], 1000)
         fall_detect = data[29]
-        temp = data[30]<<8 | data[31]
-        pressure = data[32]<<8 | data[33]
+        temp = (data[30]<<8 | data[31])/100
+        pressure = (data[32]<<8 | data[33])/100
         height = data[34]
         weight = data[35]
         age = data[36]
         gender = data[37]
-        return f"[BLE RESPONSE] spo2 = {spo2}%, spo2_confidence = {spo2_confidence}% \n hr = {hr}, hr_confidence = {hr_confidence}% \n walk step = {walk}, run step = {run} \n motion_flag = {motion_flag} \n activity = {activity} \n battery = {battery}% \n scd = {scd} \n acc_x = {change_signed_type(acc_x,1000)}, acc_y = {change_signed_type(acc_y,1000)}, acc_z = {change_signed_type(acc_z,1000)} \n gyro_x = {change_signed_type(gyro_x,100)}, gyro_y = {change_signed_type(gyro_y,100)}, gyro_z = {change_signed_type(gyro_z,100)} \n fall_detect = {fall_detect} \n temp = {temp/100}°C \n pressure = {pressure/100}hPa \n height = {height}, weight = {weight}, age = {age}, gender = {gender}\n"
-     
+        root.band_data_label_set(hr, spo2, battery,acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z)
+        print(f"[BLE RESPONSE] spo2 = {spo2}%, spo2_confidence = {spo2_confidence}% \n hr = {hr}, hr_confidence = {hr_confidence}% \n walk step = {walk}, run step = {run} \n motion_flag = {motion_flag} \n activity = {activity} \n battery = {battery}% \n scd = {scd} \n acc_x = {acc_x}, acc_y = {acc_y}, acc_z = {acc_z} \n gyro_x = {gyro_x}, gyro_y = {gyro_y}, gyro_z = {gyro_z} \n fall_detect = {fall_detect} \n temp = {temp}°C \n pressure = {pressure}hPa \n height = {height}, weight = {weight}, age = {age}, gender = {gender}\n")
+        return [spo2, spo2_confidence, hr, hr_confidence, walk, run, 
+        motion_flag, activity, battery, scd, acc_x, acc_y, acc_z, 
+        gyro_x, gyro_y, gyro_z, fall_detect, temp, pressure]
+
     elif cmd == RESP_MAX32630_CMD:
         height = data[0]
         weight = data[1]
         age = data[2]
         gender = data[3]
-        return f"[BLE RESPONSE] height = {height}, weight = {weight}, age = {age}, gender = {gender}\n"
-    
+        print(f"[BLE RESPONSE] height = {height}, weight = {weight}, age = {age}, gender = {gender}\n")
+        return None
     return None
-def ble_read_parsing(read): # 데이터 parsing 하는 부분
+def ble_read_parsing(read, root, date): # 데이터 parsing 하는 부분
     global read_packet, file_test, parsinglist
     if read['address'] not in read_packet:
         read_packet[read['address']] = []
@@ -163,13 +168,11 @@ def ble_read_parsing(read): # 데이터 parsing 하는 부분
                 if len(read_packet[read['address']]) == read_packet[read['address']][3]+6 : # 총 length와 read data로 온 length를 비교
                     if i == 3: # etx 체크
                         parsinglist.append({'address':read['address'], 'data': read_packet[read['address']]}) # 정상적으로 온 read packet 담기
-                        resp_data = ble_read_classify_cmd(hex(read_packet[read['address']][1]), read_packet[read['address']][5:len(read_packet[read['address']])-1])
+                        resp_data = ble_read_classify_cmd(hex(read_packet[read['address']][1]), read_packet[read['address']][5:len(read_packet[read['address']])-1], root)
                         if resp_data :
-                            print(resp_data)
                             if file_test:
-                                parsingFile = file.File()
-                                parsingFile.filename_change(read['name'])
-                                parsingFile.file_write_data(resp_data)
+                                parsingFile = file.File(read['name'], date)
+                                parsingFile.file_write_csv(resp_data)
                         read_packet[read['address']] = []
                     else: # etx가 아닌 경우 error
                         error = True
