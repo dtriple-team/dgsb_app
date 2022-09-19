@@ -5,7 +5,7 @@ class File:
         self.fr = None
         self.fw = None 
         self.fa = None
-        self.filename = f"./file/{name}_{date}.csv"
+        self.filename = f"./files/{name}_{date}.csv"
     def filename_change(self, filename):
         self.filename = filename
 
@@ -18,7 +18,7 @@ class File:
         self.fw.close()
         
     def file_write_data(self, data):
-        self.fw = open(f"/file/{self.filename}.txt", "a")
+        self.fw = open(f"/files/{self.filename}.txt", "a")
         self.fw.write(data)
         self.fw.close()
 
