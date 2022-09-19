@@ -22,7 +22,7 @@ venv\Scripts\activate
 
 ```
 cd dgsb_app
-pip install -r requirements.txt
+pip install -r requirements
 ```
 
 ## Excute
@@ -96,3 +96,9 @@ Python에서 사용하고 있는 'Bleak' 모듈이 불안정하기 때문에 발
 현재 read 데이터의 parsing은 위와 같이 print 됩니다. 데이터 받을 때 참고 하시면 됩니다.
 코드 부분에서는 `protocol.py`의 `ble_read_parsing()`, `ble_read_classify_cmd()` 함수를 참고해주세요.
 파싱한 데이터를 txt 파일로 출력하는 기능을 활성화 시키려면 `file_test`를 `True`로 변경해주세요.
+
+## CSV Save
+![CSV_Save](./images/10.jpg)
+
+`CSV ON` 버튼을 누르면 CSV 파일이 저장되고 `CSV OFF` 버튼을 누르면 CSV 파일이 저장되지 않습니다. `CSV ON` 버튼을 누른 상태로 `GET ALL` 또는 `GET ALL Continue` 버튼을 눌러 데이터를 받아오면 데이터가 csv 파일로 저장됩니다.
+csv 파일은 `files` 폴더에 저장되고 제목 형태는 `밴드이름_날짜.csv` 입니다.
