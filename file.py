@@ -23,6 +23,7 @@ class File:
         self.fw.close()
 
     def file_write_csv(self, data):
+        data.append(str(datetime.now())[10:19])
         if os.path.isfile(os.path.join(os.getcwd(),self.filename.replace("./","").replace("/","\\"))):
 
             f = open(self.filename, "a", newline='')
@@ -34,7 +35,7 @@ class File:
             wr = csv.writer(f)
             wr.writerow(["spo2", "spo2 confidence", "hr", "hr confidence", "walk", "run", 
         "motion flag", "activity", "battery", "scd", "acc x", "acc y", "acc z", 
-        "gyro x", "gyro y", "gyro z", "fall detect", "temp", "pressure"])
+        "gyro x", "gyro y", "gyro z", "fall detect", "temp", "pressure", "time"])
             wr.writerow(data)
             f.close()
 
