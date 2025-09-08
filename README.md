@@ -78,19 +78,19 @@ BleakScanner.register_detection_callback(...)가 더 이상 권장되지 않고,
 생성자 인자 detection_callback=으로 변경 (지금 버전에선 경고만, 향후 제거 예정)
 
 1. pip show bleak bleak-winrt
-출력 예:
+2. 출력 예:
 Name: bleak 
 Version: 0.22.2 
 ---
 Name: bleak-winrt 
 Version: 1.2.0
 
-2. 기존 버전 제거 후 원하는 버전으로 설치
+3. 기존 버전 제거 후 원하는 버전으로 설치
 pip uninstall bleak bleak-winrt -y
 
 pip install bleak==0.14.3 bleak-winrt==1.1.1
 
-3. 버전 확인
+4. 버전 확인
 pip show bleak bleak-winrt
 
 출력 예:
